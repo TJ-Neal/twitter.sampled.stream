@@ -1,0 +1,22 @@
+{
+    "profiles": {
+        "Neal.Twitter.Api": {
+            "commandName": "Project",
+            "launchBrowser": true,
+            "launchUrl": "swagger",
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "dotnetRunMessages": true,
+            "applicationUrl": "https://localhost:7159",
+            "useSSL": true
+        },
+        "Docker": {
+            "commandName": "Docker",
+            "launchBrowser": true,
+            "launchUrl": "https://{ServiceHost}:{ServicePort}/weatherforecast",
+            "publishAllPorts": true,
+            "useSSL": true
+        }
+    }
+}

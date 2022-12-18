@@ -1,0 +1,253 @@
+networks:
+    front-tier: {}
+    back-tier: {}
+
+services:
+    # Neal.Twitter Services
+    #neal.twitter.infrastructure.streamreader:
+    #    image: neal/twitter.infrastructure.streamreader:latest
+    #    build:
+    #        context: .
+    #        dockerfile: Neal.Twitter.Infrastructure.StreamReader/Dockerfile
+    #    depends_on:
+    #        kafka.server.1:
+    #            condition: service_healthy
+
+    #neal.twitter.webapp:
+    #    image: neal/twitter.webapp:latest
+    #    build:
+    #        context: .
+    #        dockerfile: Neal.Twitter.WebApp/Dockerfile
+    #    ports:
+    #        - 3000:80
+    #        - 3001:443
+    #    networks:
+    #        - front-tier
+    #    environment:
+    #        - ASPNETCORE_ENVIRONMENT=Docker
+    #        - ASPNETCORE_URLS=https://+443;http://+:80
+    #        - Kestrel:Certificates:Default:Path=/etc/ssl/private/cert.pfx
+    #        - Kestrel:Certificates:Default:AllowInvalid=true
+    #        - Kestrel:EndPointDefaults:Protocols=Http1AndHttp2
+    #    volumes:
+    #        - user.secrets:/root/.microsoft/usersecrets:ro
+    #        - ./ssl/certs:/etc/ssl/private:ro
+    #        - ${APPDATA}/.aspnet/DataProtection-Keys:/root/.aspnet/DataProtection-Keys:ro
+
+    #neal.twitter.api:
+    #    image: neal/twitter.api:latest        
+    #    build: 
+    #        context: .
+    #        dockerfile: /Neal.Twitter.Api/Dockerfile
+    #    depends_on:
+    #        ksqldb.server:
+    #            condition: service_healthy
+    #    ports:
+    #        - 4000:443
+    #    networks:
+    #        - front-tier
+    #        - back-tier
+    #    environment:
+    #        - ASPNETCORE_ENVIRONMENT=Docker
+    #        - ASPNETCORE_URLS=https://+443
+    #        - Kestrel:Certificates:Default:Path=/etc/ssl/private/cert.pfx
+    #        - Kestrel:Certificates:Default:AllowInvalid=true
+    #        - Kestrel:EndPointDefaults:Protocols=Http1AndHttp2
+    #    volumes:
+    #        - user.secrets:/root/.microsoft/usersecrets:ro
+    #        - ./ssl/certs:/etc/ssl/private:ro
+
+    # Kafka Services
+    kafka.zookeeper:
+        image: wurstmeister/zookeeper
+        user: "0:0"
+        hostname: zookeeper
+        container_name: neal.zookeeper
+        healthcheck:
+            test: echo srvr | nc zookeeper 2181 || exit 1
+            retries: 20
+            interval: 10s
+        restart: unless-stopped
+        networks:
+            - back-tier
+        ports:
+            - 2181:2181
+        environment:
+            ZOOKEEPER_CLIENT_PORT: 2181
+            ZOOKEEPER_TICK_TIME: 2000
+            ZOOKEEPER_SYNC_LIMIT: 3
+        volumes:
+          - /c/temp/data/zookeeper:/var/lib/zookeeper/data:rw
+          - /c/temp/logs/zookeeper:/var/lib/zookeeper/log:rw
+
+    kafka.server.1:        
+        image: wurstmeister/kafka
+        container_name: neal.kafka.server.1
+        user: "0:0"
+        healthcheck:
+            test:
+                ["CMD", "kafka-topics.sh", "--list", "--zookeeper", "zookeeper:2181"]
+            interval: 30s
+            timeout: 10s
+            retries: 4
+        restart: unless-stopped
+        depends_on:
+            kafka.zookeeper:
+                condition: service_healthy
+        networks:
+            - back-tier
+        ports:
+            - 9001:10000
+        environment:
+            KAFKA_BROKER_ID: 1
+            HOSTNAME_COMMAND: "docker info | grep ^Name: | cut -d' ' -f 2"
+            KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+            KAFKA_LISTENERS: INSIDE://0.0.0.0:10000,OUTSIDE://0.0.0.0:9001
+            KAFKA_ADVERTISED_LISTENERS: INSIDE://:10000,OUTSIDE://_{HOSTNAME_COMMAND}:9001
+            KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+            KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+
+            KAFKA_JMX_PORT: 9991
+            KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN
+            
+            KAFKA_offsets_topic_replication_factor: 3
+            KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 30000
+            KAFKA_CONFLUENT_BALANCER_HEAL_BROKER_FAILURE_THRESHOLD_MS: 30000
+            KAFKA_LOG_RETENSION_HOURS: 24
+
+            KAFKA_CREATE_TOPICS: "twitter-V2-sampled-stream:3:2:1"
+        volumes:
+            - /c/temp/logs/kafka-server1/docker.sock:/var/run/docker.sock:rw
+            - /c/temp/data/kafka-server1/data:/var/lib/kafka/data:rw
+
+    kafka.server.2:        
+        image: wurstmeister/kafka
+        container_name: neal.kafka.server.2
+        user: "0:0"
+        healthcheck:
+            test:
+                ["CMD", "kafka-topics.sh", "--list", "--zookeeper", "zookeeper:2181"]
+            interval: 30s
+            timeout: 10s
+            retries: 4
+        restart: unless-stopped
+        depends_on:
+            kafka.zookeeper:
+                condition: service_healthy
+        networks:
+            - back-tier
+        ports:
+            - 9002:10000
+        environment:
+            KAFKA_BROKER_ID: 2
+            KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+            HOSTNAME_COMMAND: "docker info | grep ^Name: | cut -d' ' -f 2"
+            KAFKA_LISTENERS: INSIDE://0.0.0.0:10000,OUTSIDE://0.0.0.0:9002
+            KAFKA_ADVERTISED_LISTENERS: INSIDE://:10000,OUTSIDE://_{HOSTNAME_COMMAND}:9002
+            KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+            KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+
+            KAFKA_JMX_PORT: 9991
+            KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN
+            
+            KAFKA_offsets_topic_replication_factor: 3
+            KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 30000
+            KAFKA_CONFLUENT_BALANCER_HEAL_BROKER_FAILURE_THRESHOLD_MS: 30000
+            KAFKA_LOG_RETENSION_HOURS: 24
+
+            KAFKA_CREATE_TOPICS: "twitter-V2-sampled-stream:3:2:1"
+        volumes:
+            - /c/temp/logs/kafka-server2/docker.sock:/var/run/docker.sock:rw
+            - /c/temp/data/kafka-server2/data:/var/lib/kafka/data:rw
+
+    kafka.server.3:        
+        image: wurstmeister/kafka
+        container_name: neal.kafka.server.3
+        user: "0:0"
+        healthcheck:
+            test:
+                ["CMD", "kafka-topics.sh", "--list", "--zookeeper", "zookeeper:2181"]
+            interval: 30s
+            timeout: 10s
+            retries: 4
+        restart: unless-stopped
+        depends_on:
+            kafka.zookeeper:
+                condition: service_healthy
+        networks:
+            - back-tier
+        ports:
+            - 9003:10000
+        environment:
+            KAFKA_BROKER_ID: 3
+            KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+            HOSTNAME_COMMAND: "docker info | grep ^Name: | cut -d' ' -f 2"
+            KAFKA_LISTENERS: INSIDE://0.0.0.0:10000,OUTSIDE://0.0.0.0:9003
+            KAFKA_ADVERTISED_LISTENERS: INSIDE://:10000,OUTSIDE://_{HOSTNAME_COMMAND}:9003
+            KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+            KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+
+            KAFKA_JMX_PORT: 9991
+            KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN
+            
+            KAFKA_offsets_topic_replication_factor: 3
+            KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 30000
+            KAFKA_CONFLUENT_BALANCER_HEAL_BROKER_FAILURE_THRESHOLD_MS: 30000
+            KAFKA_LOG_RETENSION_HOURS: 24
+
+            KAFKA_CREATE_TOPICS: "twitter-V2-sampled-stream:3:2:1"
+        volumes:
+            - /c/temp/logs/kafka-server3/docker.sock:/var/run/docker.sock:rw
+            - /c/temp/data/kafka-server3/data:/var/lib/kafka/data:rw
+
+    ksqldb.server:
+        image: ${REPOSITORY}/cp-ksqldb-server:${CONFLUENT_VERSION_TAG}
+        user: "0:0"
+        hostname: ksqldb-server
+        container_name: neal.ksqldb.server
+        depends_on:
+            kafka.server.1:
+                condition: service_healthy
+        restart: unless-stopped
+        healthcheck:
+            start_period: 10s
+            interval: 10s
+            retries: 20
+            test: "curl --user ksqlDBUser:ksqlDBUser -fail --silent http://ksqldb-server:8088/info | grep RUNNING 1>/dev/null || exit 1"
+        ports:
+            - 8088:8088          
+        networks:
+            - back-tier      
+        environment:
+            KSQL_HOST_NAME: ksqldb-server
+            KSQL_KSQL_SERVICE_ID: "ksql-cluster"
+            KSQL_BOOTSTRAP_SERVERS: zookeeper:2181
+            KSQL_LISTENERS: "http://0.0.0.0:8088"
+            KSQL_KSQL_STREAMS_REPLICATION_FACTOR: 2
+            KSQL_KSQL_INTERNAL_TOPIC_REPLICAS: 2
+            KSQL_KSQL_STREAMS_NUM_STREAM_THREADS: 1
+            KSQL_CACHE_MAX_BYTES_BUFFERING: 0
+            KSQL_LOG4J_ROOT_LOGLEVEL: WARN
+            KAFKA_CONSUMER_GROUP: tweet-consumer-group
+        volumes:
+            - /c/temp/data/ksqldb/scripts:/data/scripts/
+            - /c/temp/data/ksqldb/udfs:/data/udfs/
+
+    ksqldb-cli:
+        image: ${REPOSITORY}/cp-ksqldb-cli:${CONFLUENT_VERSION_TAG}
+        container_name: ksqldb-cli
+        depends_on:
+            ksqldb.server:
+                condition: service_healthy
+        volumes:
+            - ./scripts/ksqlDB/statements.sql:/tmp/statements.sql
+        entrypoint: /bin/sh
+        tty: true
+
+volumes:
+    user.secrets:
+        driver: local
+        driver_opts:
+            o: bind
+            type: none
+            device: ${APPDATA}/Microsoft/UserSecrets
