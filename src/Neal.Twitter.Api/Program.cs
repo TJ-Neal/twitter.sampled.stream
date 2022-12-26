@@ -20,4 +20,3 @@ else
 }
 
 await app.RunAsync();
-
