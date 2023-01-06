@@ -8,7 +8,7 @@ public class PrivacyModel : PageModel
 
     public PrivacyModel(ILogger<PrivacyModel> logger)
     {
-        _logger = logger;
+        this.logger = logger;
     }
 
     #endregion Public Constructors
@@ -23,7 +23,7 @@ public class PrivacyModel : PageModel
 
     #region Fields
 
-    private readonly ILogger<PrivacyModel> _logger;
+    private readonly ILogger<PrivacyModel> logger;
 
     #endregion Fields
 }

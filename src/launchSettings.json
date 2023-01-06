@@ -1,12 +1,39 @@
 {
     "profiles": {
-        "Docker Compose": {
+        "all": {
             "commandName": "DockerCompose",
             "commandVersion": "1.0",
-            "serviceActions": {
-                "kafka-server-1": "StartWithoutDebugging",
-                "kafka-zookeeper-1": "StartWithoutDebugging",
-                "kafdrop": "StartWithoutDebugging"
+            "composeProfile": {
+                "includes": [
+                    "all"
+                ]
+            }
+        },
+        "faster-only": {
+            "commandName": "DockerCompose",
+            "commandVersion": "1.0",
+            "composeProfile": {
+                "includes": [
+                    "faster-only"
+                ]
+            }
+        },
+        "kafka-only": {
+            "commandName": "DockerCompose",
+            "commandVersion": "1.0",
+            "composeProfile": {
+                "includes": [
+                    "kafka-only"
+                ]
+            }
+        },
+        "simple-only": {
+            "commandName": "DockerCompose",
+            "commandVersion": "1.0",
+            "composeProfile": {
+                "includes": [
+                    "simple-only"
+                ]
             }
         }
     }

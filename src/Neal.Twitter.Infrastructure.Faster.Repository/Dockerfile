@@ -1,0 +1,34 @@
+FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine AS base
+WORKDIR /src
+EXPOSE 80
+EXPOSE 443
+
+FROM base AS build
+COPY ["Neal.Twitter.Infrastructure.Faster.Repository/.", "Neal.Twitter.Infrastructure.Faster.Repository/"]
+COPY ["Neal.Twitter.Core/.", "Neal.Twitter.Core/"]
+COPY ["Neal.Twitter.Application/.", "Neal.Twitter.Application/"]
+COPY ["Neal.Twitter.Faster.Client/.", "Neal.Twitter.Faster.Client/"]
+RUN dotnet publish Neal.Twitter.Infrastructure.Faster.Repository -c Docker -o /publish -r linux-musl-x64 --self-contained true --restore /p:PublishSingleFile=true
+
+FROM mcr.microsoft.com/dotnet/aspnet:7.0.0-alpine3.16-amd64 AS FINAL
+WORKDIR /app
+COPY --from=build /publish .
+ENTRYPOINT ["./Neal.Twitter.Infrastructure.Faster.Repository"]
+
+# Add support files for Kestrel, ICU, and SSL
+RUN apk update \
+    && apk add --no-cache \
+    icu-libs \
+    krb5-libs \
+    libgcc \
+    libintl \
+    libssl1.1 \
+    libstdc++ \
+    zlib \
+    && apk add --no-cache --virtual .build-deps \
+    curl \
+    msttcorefonts-installer \
+    fontconfig \
+    && update-ms-fonts \
+    && fc-cache -f \
+    && apk del .build-deps

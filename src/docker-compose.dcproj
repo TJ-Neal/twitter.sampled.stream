@@ -7,9 +7,11 @@
     <DockerServiceName>neal.twitter.docker</DockerServiceName>
   </PropertyGroup>
   <ItemGroup>
-    <None Include="docker-compose-production.yml" />
+    <None Include=".env" />
+    <None Include=".env.kafka-rest" />
+    <None Include=".env.kafka-server" />
+    <None Include=".env.ksqldb-server" />
     <None Include="docker-compose.yml" />
     <None Include=".dockerignore" />
-    <None Include="Dockerfile-StreamReader" />
   </ItemGroup>
 </Project>

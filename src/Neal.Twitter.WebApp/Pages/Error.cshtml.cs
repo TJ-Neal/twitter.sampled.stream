@@ -8,6 +8,12 @@ namespace Neal.Twitter.WebApp.Pages;
 [IgnoreAntiforgeryToken]
 public class ErrorModel : PageModel
 {
+    #region Fields
+
+    private readonly ILogger<ErrorModel> logger;
+
+    #endregion Fields
+
     #region Properties
 
     public string? RequestId { get; set; }
@@ -20,7 +26,7 @@ public class ErrorModel : PageModel
 
     public ErrorModel(ILogger<ErrorModel> logger)
     {
-        _logger = logger;
+        this.logger = logger;
     }
 
     #endregion Public Constructors
@@ -33,10 +39,4 @@ public class ErrorModel : PageModel
     }
 
     #endregion Public Methods
-
-    #region Fields
-
-    private readonly ILogger<ErrorModel> _logger;
-
-    #endregion Fields
 }

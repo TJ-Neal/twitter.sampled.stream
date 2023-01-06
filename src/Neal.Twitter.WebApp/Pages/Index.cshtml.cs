@@ -8,7 +8,7 @@ public class IndexModel : PageModel
 
     public IndexModel(ILogger<IndexModel> logger)
     {
-        _logger = logger;
+        this.logger = logger;
     }
 
     #endregion Public Constructors
@@ -23,7 +23,7 @@ public class IndexModel : PageModel
 
     #region Fields
 
-    private readonly ILogger<IndexModel> _logger;
+    private readonly ILogger<IndexModel> logger;
 
     #endregion Fields
 }

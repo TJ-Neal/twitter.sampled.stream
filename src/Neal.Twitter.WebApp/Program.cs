@@ -1,4 +1,15 @@
-var builder = WebApplication.CreateBuilder(args);
+using Neal.Twitter.Application.Constants.Messages;
+using Serilog;
+
+var builder = WebApplication
+    .CreateBuilder(args);
+
+// Attach Serilog logger
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .CreateLogger();
+
+Log.Information(ApplicationStatusMessages.Started);
 
 // Add services to the container.
 builder.Services.AddRazorPages();

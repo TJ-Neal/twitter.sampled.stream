@@ -1,6 +1,6 @@
-﻿using LinqToTwitter;
-using MediatR;
+﻿using MediatR;
+using Neal.Twitter.Core.Entities.Twitter;
 
 namespace Neal.Twitter.Application.Events.Notifications;
 
-public record TweetReceivedNotification(Tweet Tweet, string Topic) : INotification;
+public record TweetReceivedNotification(TweetDto Tweet) : INotification;
