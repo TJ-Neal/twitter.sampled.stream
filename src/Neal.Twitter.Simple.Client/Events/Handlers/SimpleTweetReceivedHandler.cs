@@ -21,4 +21,6 @@ public class SimpleTweetReceivedHandler : INotificationHandler<TweetReceivedNoti
         await this.tweetRepositoryProducerWrapper.ProduceAsync(notification.Tweet, cancellationToken);
 
     #endregion INotificationHandler Implementation
+
+    public override int GetHashCode() => base.GetHashCode();
 }

@@ -11,6 +11,7 @@ public static class FasterClientServiceCollectionExtensions
 {
     public static IServiceCollection AddFasterRepositoryHandlerIfEnabled(this IServiceCollection services, IConfiguration configuration, List<Type> mediatrTypes)
     {
+        // TODO: Use faster model
         bool isEnabled = configuration
             ?.GetSection(ApplicationConfigurationKeys.Faster)
             ?.GetValue<bool>(ApplicationConfigurationKeys.Enabled)

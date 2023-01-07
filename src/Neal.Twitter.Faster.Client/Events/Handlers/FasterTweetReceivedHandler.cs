@@ -14,4 +14,6 @@ public class FasterTweetReceivedHandler : INotificationHandler<TweetReceivedNoti
     public async Task Handle(TweetReceivedNotification notification, CancellationToken cancellationToken) =>
         await this.tweetRepositoryProducerWrapper
             .ProduceAsync(notification.Tweet, cancellationToken);
+
+    public override int GetHashCode() => base.GetHashCode();
 }

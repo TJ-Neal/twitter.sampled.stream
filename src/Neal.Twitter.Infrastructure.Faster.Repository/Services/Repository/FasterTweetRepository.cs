@@ -1,4 +1,6 @@
 ﻿using FASTER.core;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Neal.Twitter.Application.Constants.Keys;
 using Neal.Twitter.Application.Constants.Messages;
 using Neal.Twitter.Application.Interfaces.TweetRepository;
@@ -9,9 +11,10 @@ namespace Neal.Twitter.Infrastructure.Faster.Repository.Services.Repository;
 
 public sealed class FasterTweetRepository : ITweetRepository
 {
-    #region Fields
+    // Justification - Initializers used in constructor
+#pragma warning disable CS8618
 
-    #region Static Fields
+    #region Fields
 
     #region Tweet Store
 
@@ -19,9 +22,9 @@ public sealed class FasterTweetRepository : ITweetRepository
 
     private static AsyncPool<ClientSession<string, string, string, string, Empty, IFunctions<string, string, string, string, Empty>>> tweetsSessionPool;
 
-    private static IDevice tweetObjectLog;
+    private static IDevice tweetsObjectLog;
 
-    private static IDevice tweetLog;
+    private static IDevice tweetsLog;
 
     #endregion Tweet Store
 
@@ -39,9 +42,7 @@ public sealed class FasterTweetRepository : ITweetRepository
 
     #endregion Hashtags Store
 
-    #endregion Static Fields
-
-    #region Instance Fields
+    private static Thread commitThread;
 
     private readonly ILogger<FasterTweetRepository> logger;
 
@@ -49,27 +50,21 @@ public sealed class FasterTweetRepository : ITweetRepository
 
     private int maxPageSize;
 
-    #endregion Instance Fields
-
     #endregion Fields
 
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-
-    static FasterTweetRepository()
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-    {
-        string rootPath = Path.Combine(Path.GetTempPath(), "Logs", "Faster");
-
-        InstantiateTweetsStore(rootPath);
-        InstantiateHashtagsStore(rootPath);
-
-        new Thread(new ThreadStart(() => CommitThread(cancellationTokenSource.Token))).Start();
-    }
+#pragma warning restore CS8618
 
     public FasterTweetRepository(ILogger<FasterTweetRepository> logger, IConfiguration configuration)
     {
+        // TODO: Create a FasterKV configuration model so this can be configured to be project specific
+        string rootPath = Path.Combine(Path.GetTempPath(), "Logs", "Faster");
         this.logger = logger;
+
+        // TODO: Create object for this that .Get<Pagination> can handle.
         this.InitializePagination(configuration);
+
+        InstantiateTweetsStore(rootPath);
+        InstantiateHashtagsStore(rootPath);
     }
 
     public void Dispose()
@@ -95,9 +90,6 @@ public sealed class FasterTweetRepository : ITweetRepository
             {
                 await tweetsSession.RMWAsync(new string(tweet.Id), JsonSerializer.Serialize(tweet));
 
-                this.logger.LogInformation("Store stats:\n{stats}", JsonSerializer.Serialize(tweetsStore));
-                this.logger.LogInformation("Session stats:\n{stats}", JsonSerializer.Serialize(tweetsSession));
-
                 if (tweet.Hashtags is null
                     || !tweet.Hashtags.Any())
                 {
@@ -109,6 +101,13 @@ public sealed class FasterTweetRepository : ITweetRepository
                     .Select(hashtag => hashtag.Tag)
                     .ToList()
                     .ForEach(async hashtag => await hashtagsSession.RMWAsync(hashtag!, 1));
+            }
+
+            // Ensure a commit thread is running once tweets have been added at least once
+            if (commitThread is null)
+            {
+                commitThread = new Thread(new ThreadStart(() => CommitThread(cancellationTokenSource.Token)));
+                commitThread.Start();
             }
         }
         catch (Exception ex)
@@ -134,7 +133,7 @@ public sealed class FasterTweetRepository : ITweetRepository
 
         var iterator = tweetsSession.Iterate(pageEnd);
 
-        while (iterator.GetNext(out var recordInfo, out var key, out var value))
+        while (iterator.GetNext(out var recordInfo, out string key, out string value))
         {
             if (iterator.CurrentAddress < pageStart)
             {
@@ -227,15 +226,15 @@ public sealed class FasterTweetRepository : ITweetRepository
         string tweetsPath = Path.Combine(rootPath, "tweets");
         var tweetFuncs = new SimpleFunctions<string, string>((a, b) => b);
 
-        tweetObjectLog = Devices.CreateLogDevice(Path.Combine(tweetsPath, "_obj.log"), recoverDevice: true);
-        tweetLog = Devices.CreateLogDevice(Path.Combine(tweetsPath, ".log"), recoverDevice: true);
+        tweetsObjectLog = Devices.CreateLogDevice(Path.Combine(tweetsPath, "_obj.log"), recoverDevice: true);
+        tweetsLog = Devices.CreateLogDevice(Path.Combine(tweetsPath, ".log"), recoverDevice: true);
 
         var settings = new FasterKVSettings<string, string>(tweetsPath, deleteDirOnDispose: false)
         {
             IndexSize = 1L << 20,
             TryRecoverLatest = true,
-            LogDevice = tweetLog,
-            ObjectLogDevice = tweetObjectLog,
+            LogDevice = tweetsLog,
+            ObjectLogDevice = tweetsObjectLog,
             CheckpointDir = Path.Combine(tweetsPath, "CheckPoints"),
             ReadCacheEnabled = true
         };

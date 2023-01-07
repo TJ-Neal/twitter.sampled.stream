@@ -19,7 +19,7 @@ try
         .ReadFrom.Configuration(configuration)
         .CreateLogger();
 
-    Log.Information(ApplicationStatusMessages.Started);
+    Log.Warning(ApplicationStatusMessages.Started);
 
     // Configure and build Host Service
     var host = Host.CreateDefaultBuilder(args)

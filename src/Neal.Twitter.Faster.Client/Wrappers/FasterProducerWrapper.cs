@@ -42,6 +42,7 @@ public sealed class FasterProducerWrapper : IFasterProducerWrapper
             return;
         }
 
+        // TODO: Use faster model
         string baseUrl = this.configuration
             .GetSection(ApplicationConfigurationKeys.Faster)
             .GetValue<string>(ApplicationConfigurationKeys.BaseUrl)

@@ -9,4 +9,6 @@ public struct ExceptionMessages
     public const string SerializationError = "{name} is not valid cannot be serialized.";
 
     public const string GenericException = "Exception encountered during execution: {message}";
+
+    public const string DisposeException = "There was an exception while disposing [{className}]:\n{exception}";
 }

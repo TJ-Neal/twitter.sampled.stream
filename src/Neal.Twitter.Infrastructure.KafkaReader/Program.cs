@@ -1,0 +1,65 @@
+﻿using Neal.Twitter.Application.Constants.Messages;
+using Neal.Twitter.Application.Interfaces.TweetRepository;
+using Neal.Twitter.Infrastructure.Faster.Repository.Services.Repository;
+using Neal.Twitter.Infrastructure.KafkaReader.Services.Kafka;
+using Neal.Twitter.Kafka.Client.Interfaces;
+using Neal.Twitter.Kafka.Client.Wrappers;
+
+try
+{
+    // Load configuration
+    var configuration = new ConfigurationBuilder()
+        .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+        .AddUserSecrets<Program>()
+        .Build();
+
+    // Attach Serilog logger
+    Log.Logger = new LoggerConfiguration()
+        .ReadFrom.Configuration(configuration)
+        .CreateLogger();
+
+    Log.Warning(ApplicationStatusMessages.Started);
+
+    // Configure and build Host Service
+    var host = Host.CreateDefaultBuilder(args)
+        .ConfigureServices((context, services) =>
+        {
+            services
+                .Configure<HostOptions>(options => options.ShutdownTimeout = TimeSpan.FromSeconds(10))
+                .Configure<JsonSerializerOptions>(options =>
+                {
+                    options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                    options.DefaultIgnoreCondition = JsonIgnoreCondition.Always;
+                })
+                .AddLogging(options =>
+                {
+                    options.ClearProviders();
+                    options.AddSerilog(dispose: true);
+                });
+
+            services
+                .AddSingleton<IKafkaConsumerWrapper<string, string>, KafkaConsumerWrapper>()
+                .AddSingleton<ITweetRepository, FasterTweetRepository>() // Single instance of Tweet Repository with persistence
+                .AddHostedService<KafkaConsumerService>(); // Add the hosted service for reading the twitter stream
+        })
+        .UseSerilog()
+        .Build();
+
+    Log.Information(ApplicationStatusMessages.HostedServiceStarting);
+
+    // Start hosted service execution
+    await host.RunAsync();
+
+    Log.Information(ApplicationStatusMessages.HostedServiceFinished);
+}
+catch (Exception ex)
+{
+    // Write to console in case log initialization fails
+    Console.WriteLine($"{DateTime.UtcNow}Unexpected exception occurred:\n{ex}");
+    Log.Fatal(ex, ApplicationStatusMessages.FatalError);
+}
+finally
+{
+    Log.Information(ApplicationStatusMessages.Stopped);
+    Log.CloseAndFlush();
+}

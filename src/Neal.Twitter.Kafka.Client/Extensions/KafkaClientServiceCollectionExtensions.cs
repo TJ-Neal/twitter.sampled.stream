@@ -12,6 +12,7 @@ public static class KafkaClientServiceCollectionExtensions
 {
     public static IServiceCollection AddKafkaHandlerIfEnabled(this IServiceCollection services, IConfiguration configuration, List<Type> mediatrTypes)
     {
+        // TODO: Use Kafka model to convert this
         bool isEnabled = configuration
             ?.GetSection(ConfigurationKeys.Kafka)
             ?.GetValue<bool>(ConfigurationKeys.Enabled)

@@ -34,6 +34,7 @@ public class TwitterStreamReaderService : BackgroundService
                             await this.linqToTwitterWrapper.ProcessStreamContent(streamContent, cancellationToken),
                         cancellationToken);
             }
+
             this.logger.LogInformation(CommonLogMessages.CancelRequested);
         }
         catch (Exception ex)

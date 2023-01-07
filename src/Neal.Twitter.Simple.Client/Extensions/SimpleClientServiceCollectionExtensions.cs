@@ -11,6 +11,7 @@ public static class SimpleClientServiceCollectionExtensions
 {
     public static IServiceCollection AddSimpleRepositoryHandlerIfEnabled(this IServiceCollection services, IConfiguration configuration, List<Type> mediatrTypes)
     {
+        // TODO: Create a model to do this
         bool isEnabled = configuration
             ?.GetSection(ApplicationConfigurationKeys.Simple)
             ?.GetValue<bool>(ApplicationConfigurationKeys.Enabled)

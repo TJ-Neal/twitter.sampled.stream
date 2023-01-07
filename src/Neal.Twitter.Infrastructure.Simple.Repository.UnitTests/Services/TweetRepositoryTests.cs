@@ -17,9 +17,7 @@ public class TweetRepositoryTests
 
     #endregion Fields
 
-    public TweetRepositoryTests()
-    {
-        this.tweetRepository = new ServiceCollection()
+    public TweetRepositoryTests() => this.tweetRepository = new ServiceCollection()
             .AddSingleton<IConfiguration>(new ConfigurationBuilder().Build())
             .AddSingleton<IMemoryCache>(new MemoryCache(new MemoryCacheOptions()))
             .AddSingleton(this.logFactory.CreateLogger<TweetRepository>())
@@ -27,7 +25,6 @@ public class TweetRepositoryTests
             .BuildServiceProvider()
             .GetService<TweetRepository>()
                 ?? throw new InvalidOperationException("Unable to create Tweet Repository.");
-    }
 
     [Fact]
     public async Task TweetRepository_SingleTweet_NoHashtags_WriteAndRead_Success()
@@ -38,7 +35,7 @@ public class TweetRepositoryTests
         // Act
         await service.AddRecordsAsync(new List<TweetDto> { new TweetDto("123", "This is a tweet without hashtags", null) });
 
-        int afterCount = (await service.GetAllTweetsAsync(1, 1)).Count();
+        int afterCount = (await service.GetAllTweetsAsync(1, 1)).Count;
         int afterHashtagsCount = (await service.GetTopHashtags(10)).Count();
 
         // Assert
@@ -61,7 +58,7 @@ public class TweetRepositoryTests
             await service.AddRecordsAsync(new List<TweetDto> { new TweetDto(i.ToString(), i.ToString(), hashtags) });
         }
 
-        int afterCount = (await service.GetAllTweetsAsync(1, numberOfTweets)).Count();
+        int afterCount = (await service.GetAllTweetsAsync(1, numberOfTweets)).Count;
         long totalCount = await service.GetCountAsync();
         int afterHashtagsCount = (await service.GetTopHashtags(10)).Count();
 

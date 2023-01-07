@@ -2,68 +2,60 @@ name: neal-twitter
 
 # Services to be deployed to Docker containers
 services:
-    # Neal-Twitter Services
-    #neal-twitter-streamreader:
-    #    profiles: [ all ]
-    #    image: ${STREAM_READER_NAME}:latest
-    #    container_name: ${STREAM_READER_NAME}
-    #    hostname: ${STREAM_READER_NAME}
-    #    build:
-    #        context: ${SRC_BUILD_CONTEXT}
-    #        dockerfile: Neal.Twitter.Infrastructure.StreamReader/${DOCKER_FILE_NAME}
-    #    depends_on:
-    #        kafka-zookeeper-1:
-    #            condition: service_healthy
-    #        kafka-server-1:
-    #            condition: service_healthy
-    #    networks:
-    #        - ${INFRASTRUCTURE_NETWORK_NAME}
-    #    volumes:
-    #        - ${ROOT_LOGS_PATH}/${STREAM_READER_NAME}:/var/lib/${STREAM_READER_NAME}:rw
-    #        - ${USER_SECRETS_PATH}:/root/.microsoft/usersecrets/:rw
-
-    neal-twitter-faster-repository:
-        profiles: [ faster-only, all ]
-        image: ${FASTER_REPOSITORY_NAME}:latest
-        container_name: ${FASTER_REPOSITORY_NAME}
-        hostname: ${FASTER_REPOSITORY_NAME}
+    # Neal-Twitter API Services
+    neal-twitter-kafka-tweet-api:
+        profiles: [ kafka-only, all ]
+        image: ${KAFKA_TWEET_API_NAME}:latest
+        container_name: ${KAFKA_TWEET_API_NAME}
+        hostname: ${KAFKA_TWEET_API_NAME}
         build:
             context: ${SRC_BUILD_CONTEXT}
-            dockerfile: Neal.Twitter.Infrastructure.Faster.Repository/${DOCKER_FILE_NAME}
+            dockerfile: Neal.Twitter.Infrastructure.Kafka.Tweet.API/${DOCKER_FILE_NAME}
         networks:
-            - ${API_NETWORK_NAME}
+            - ${INFRASTRUCTURE_NETWORK_NAME}
+        ports:
+            - ${KAFKA_TWEET_EXTERNAL_PORT}:${HTTP_PORT}
+            - ${KAFKA_TWEET_EXTERNAL_PORT_SSL}:${HTTPS_PORT}
+        environment:
+            - TMPDIR=/var/lib/${KAFKA_TWEET_API_NAME}
+        volumes:
+            - ${ROOT_LOGS_PATH}/${KAFKA_TWEET_API_NAME}:/var/lib/${KAFKA_TWEET_API_NAME}:rw
+            
+    neal-twitter-faster-api:
+        profiles: [ faster-only, all ]
+        image: ${FASTER_API_NAME}:latest
+        container_name: ${FASTER_API_NAME}
+        hostname: ${FASTER_API_NAME}
+        build:
+            context: ${SRC_BUILD_CONTEXT}
+            dockerfile: Neal.Twitter.Infrastructure.Faster.API/${DOCKER_FILE_NAME}
+        networks:
             - ${INFRASTRUCTURE_NETWORK_NAME}
         ports:
             - ${FASTER_EXTERNAL_PORT}:${HTTP_PORT}
             - ${FASTER_EXTERNAL_PORT_SSL}:${HTTPS_PORT}
         environment:
-            - ASPNETCORE_ENVIRONMENT=${DOCKER_ENVIRONMENT}
-            - ASPNETCORE_URLS=${HTTP_SCHEME}://+${HTTP_PORT}
+            - TMPDIR=/var/lib/${FASTER_API_NAME}
         volumes:
-            - ${ROOT_LOGS_PATH}/${FASTER_REPOSITORY_NAME}:/var/lib/${FASTER_REPOSITORY_NAME}:rw
-            - ${USER_SECRETS_PATH}:/root/.microsoft/usersecrets/:ro
-            - ${SOLUTION_CERT_PATH}:/etc/ssl/private:rw
+            - ${ROOT_LOGS_PATH}/${FASTER_API_NAME}:/var/lib/${FASTER_API_NAME}:rw
 
-    neal-twitter-simple-repository:
+    neal-twitter-simple-api:
         profiles: [ simple-only, all ]
-        image: ${SIMPLE_REPOSITORY_NAME}:latest
-        container_name: ${SIMPLE_REPOSITORY_NAME}
-        hostname: ${SIMPLE_REPOSITORY_NAME}
+        image: ${SIMPLE_API_NAME}:latest
+        container_name: ${SIMPLE_API_NAME}
+        hostname: ${SIMPLE_API_NAME}
         build:
             context: ${SRC_BUILD_CONTEXT}
-            dockerfile: Neal.Twitter.Infrastructure.Simple.Repository/${DOCKER_FILE_NAME}
+            dockerfile: Neal.Twitter.Infrastructure.Simple.API/${DOCKER_FILE_NAME}
         networks:
-            - ${API_NETWORK_NAME}
             - ${INFRASTRUCTURE_NETWORK_NAME}
         ports:
             - ${SIMPLE_EXTERNAL_PORT}:${HTTP_PORT}
+            - ${SIMPLE_EXTERNAL_PORT_SSL}:${HTTPS_PORT}
         environment:
-            - ASPNETCORE_ENVIRONMENT=${DOCKER_ENVIRONMENT}
-            - ASPNETCORE_URLS=${HTTP_SCHEME}://+${HTTP_PORT}
+            - TMPDIR=/var/lib/${SIMPLE_API_NAME}
         volumes:
-            - ${ROOT_LOGS_PATH}/${SIMPLE_REPOSITORY_NAME}:/var/lib/${SIMPLE_REPOSITORY_NAME}:rw
-            - ${USER_SECRETS_PATH}:/root/.microsoft/usersecrets/:ro
-            - ${SOLUTION_CERT_PATH}:/etc/ssl/private:rw
+            - ${ROOT_LOGS_PATH}/${SIMPLE_API_NAME}:/var/lib/${SIMPLE_API_NAME}:rw
 
     ## KafDrop Kafka monitory tool
     kafdrop:
@@ -162,6 +154,4 @@ services:
 # Shared network definitions
 networks:
     back-tier:
-        driver: bridge
-    front-tier:
         driver: bridge

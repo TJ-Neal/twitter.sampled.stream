@@ -42,6 +42,7 @@ public sealed class SimpleProducerWrapper : ISimpleProducerWrapper
             return;
         }
 
+        // TODO: Use a model for this
         string baseUrl = this.configuration
             .GetSection(ApplicationConfigurationKeys.Simple)
             .GetValue<string>(ApplicationConfigurationKeys.BaseUrl)

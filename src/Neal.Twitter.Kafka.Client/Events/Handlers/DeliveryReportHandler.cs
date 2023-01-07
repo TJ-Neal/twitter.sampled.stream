@@ -35,7 +35,7 @@ public class DeliveryReportHandler : INotificationHandler<DeliveryReportNotifica
             else
             {
                 this.logger.LogInformation(
-                    HandlerLogMessages.PrintResult,
+                    HandlerLogMessages.PrintProducerResult,
                     deliveryReport.Timestamp.UtcDateTime,
                     deliveryReport.Status,
                     deliveryReport.Topic);

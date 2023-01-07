@@ -17,8 +17,6 @@ public class KafkaTweetReceivedHandler : INotificationHandler<TweetReceivedNotif
 {
     #region Fields
 
-    private readonly bool isEnabled;
-
     private readonly string topic;
 
     private readonly IKafkaProducerWrapper kafkaProducerWrapper;
@@ -29,10 +27,7 @@ public class KafkaTweetReceivedHandler : INotificationHandler<TweetReceivedNotif
 
     public KafkaTweetReceivedHandler(IConfiguration configuration, IKafkaProducerWrapper kafkaProducer, ILogger<KafkaTweetReceivedHandler> logger)
     {
-        this.isEnabled = configuration
-            ?.GetSection(ConfigurationKeys.Kafka)
-            ?.GetValue<bool>(ConfigurationKeys.Enabled)
-                ?? false;
+        // TODO: Create Kafka model to convert this
         this.topic = configuration
             ?.GetSection(ConfigurationKeys.Kafka)
             ?.GetValue<string>(ConfigurationKeys.Topic)
@@ -85,4 +80,6 @@ public class KafkaTweetReceivedHandler : INotificationHandler<TweetReceivedNotif
     }
 
     #endregion INotificationHandler Implementation
+
+    public override int GetHashCode() => base.GetHashCode();
 }

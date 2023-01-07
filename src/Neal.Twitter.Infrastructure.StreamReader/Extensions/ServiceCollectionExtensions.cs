@@ -9,6 +9,7 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddTwitterStreamConsumer(this IServiceCollection services, IConfigurationRoot? configuration)
     {
+        // TODO: Create model to convert this
         // Create application authorizer and authenticate with Twitter for TwitterContext initialization.
         var twitterCredentialStore = new InMemoryCredentialStore
         {

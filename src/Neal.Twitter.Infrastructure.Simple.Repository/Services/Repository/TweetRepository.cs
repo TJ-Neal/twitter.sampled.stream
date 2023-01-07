@@ -1,4 +1,6 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Neal.Twitter.Application.Constants.Keys;
 using Neal.Twitter.Application.Constants.Messages;
 using Neal.Twitter.Application.Interfaces.TweetRepository;
@@ -7,7 +9,7 @@ using System.Collections.Concurrent;
 
 namespace Neal.Twitter.Infrastructure.Simple.Repository.Services.Repository;
 
-public class TweetRepository : ITweetRepository
+public sealed class TweetRepository : ITweetRepository
 {
     #region Fields
 
@@ -20,8 +22,6 @@ public class TweetRepository : ITweetRepository
     private int maxPageSize;
 
     #endregion Fields
-
-    #region Properties
 
     private ConcurrentDictionary<string, TweetDto> Tweets
     {
@@ -59,12 +59,12 @@ public class TweetRepository : ITweetRepository
         }
     }
 
-    #endregion Properties
-
     public TweetRepository(IMemoryCache memoryCache, ILogger<TweetRepository> logger, IConfiguration configuration)
     {
         this.memoryCache = memoryCache;
         this.logger = logger;
+
+        // TODO: Use pagination model
         this.InitializePagination(configuration);
     }
 
@@ -140,7 +140,7 @@ public class TweetRepository : ITweetRepository
     private void InitializePagination(IConfiguration configuration)
     {
         var configurationSection = configuration?.GetSection(ApplicationConfigurationKeys.Pagination);
-        var configuratedMaxPageSize = configurationSection?.GetValue<int>(ApplicationConfigurationKeys.MaximumPageSize);
+        int? configuratedMaxPageSize = configurationSection?.GetValue<int>(ApplicationConfigurationKeys.MaximumPageSize);
 
         this.maxPageSize = !configuratedMaxPageSize.HasValue
             || configuratedMaxPageSize <= 0

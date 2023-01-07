@@ -5,16 +5,10 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>dotnet-Neal.Twitter.Infrastructure.StreamReader-6ec9a0ef-1f8e-4a27-b883-9b94ec593d90</UserSecretsId>
-    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="fjsjk03j.zus~" />
-  </ItemGroup>
-
-  <ItemGroup>
       <PackageReference Include="confluent.kafka" Version="1.9.3" />
-      <PackageReference Include="Confluent.Kafka.DependencyInjection" Version="2.1.1" />
       <PackageReference Include="linqtotwitter" Version="6.15.0" />
       <PackageReference Include="MediatR" Version="11.1.0" />
       <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="11.0.0" />
@@ -60,11 +54,6 @@
 
     <ItemGroup>
         <None Include="appsettings.Debug.json">
-            <IsTransformFile>true</IsTransformFile>
-            <DependentUpon>appsettings.json</DependentUpon>
-            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-        </None>
-        <None Include="appsettings.Docker.json">
             <IsTransformFile>true</IsTransformFile>
             <DependentUpon>appsettings.json</DependentUpon>
             <CopyToOutputDirectory>Never</CopyToOutputDirectory>

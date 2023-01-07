@@ -31,6 +31,7 @@ public class KafkaProducerWrapper : IKafkaProducerWrapper, IDisposable
         this.mediator = mediator;
         this.logger = logger;
 
+        // TODO: See if models can be used for this instead
         var kafkaSection = configuration
             ?.GetSection($"{ConfigurationKeys.Kafka}");
 
