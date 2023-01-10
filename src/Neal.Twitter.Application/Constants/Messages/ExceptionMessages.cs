@@ -1,5 +1,8 @@
 ﻿namespace Neal.Twitter.Application.Constants.Messages;
 
+/// <summary>
+/// Represents various strings for used in exception messages used within the application.
+/// </summary>
 public struct ExceptionMessages
 {
     public const string ErrorDuringLoop = "Failed during loop executions\n{exception}";

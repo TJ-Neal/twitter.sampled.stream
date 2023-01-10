@@ -1,8 +1,7 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using Neal.Twitter.Application.Constants.Keys;
+﻿using Microsoft.Extensions.Logging;
 using Neal.Twitter.Application.Constants.Messages;
 using Neal.Twitter.Application.Utilities;
+using Neal.Twitter.Core.Entities.Configuration;
 using Neal.Twitter.Core.Entities.Twitter;
 using Neal.Twitter.Simple.Client.Constants;
 using Neal.Twitter.Simple.Client.Interfaces;
@@ -10,11 +9,14 @@ using System.Net.Http.Json;
 
 namespace Neal.Twitter.Simple.Client.Wrappers;
 
+/// <summary>
+/// <inheritdoc cref="ISimplerProducerWrapper" />
+/// </summary>
 public sealed class SimpleProducerWrapper : ISimpleProducerWrapper
 {
     #region Fields
 
-    private readonly IConfiguration configuration;
+    private readonly SimpleConfiguration configuration;
 
     private readonly ILogger<SimpleProducerWrapper> logger;
 
@@ -25,30 +27,26 @@ public sealed class SimpleProducerWrapper : ISimpleProducerWrapper
     #endregion Fields
 
     public SimpleProducerWrapper(
-        IConfiguration configuration,
         ILogger<SimpleProducerWrapper> logger,
-        IHttpClientFactory clientFactory)
+        IHttpClientFactory clientFactory,
+        SimpleConfiguration simpleConfiguration)
     {
-        this.configuration = configuration;
+        this.configuration = simpleConfiguration;
         this.logger = logger;
         this.clientFactory = clientFactory;
     }
 
     public async Task ProduceAsync(TweetDto message, CancellationToken cancellationToken)
     {
-        if (hasFaulted
+        // TODO: Create a timer for resetting faulted so producers can retry after t time
+        if (!this.configuration.Enabled
+            || this.hasFaulted
             || cancellationToken.IsCancellationRequested)
         {
             return;
         }
 
-        // TODO: Use a model for this
-        string baseUrl = this.configuration
-            .GetSection(ApplicationConfigurationKeys.Simple)
-            .GetValue<string>(ApplicationConfigurationKeys.BaseUrl)
-                ?? string.Empty;
-
-        if (string.IsNullOrEmpty(baseUrl))
+        if (string.IsNullOrEmpty(this.configuration.BaseUrl))
         {
             throw new InvalidOperationException(CommonLogMessages.InvalidConfiguration);
         }
@@ -61,7 +59,7 @@ public sealed class SimpleProducerWrapper : ISimpleProducerWrapper
             {
                 using var client = clientFactory.CreateClient();
 
-                var result = await client.PostAsJsonAsync(baseUrl, new List<TweetDto> { message }, cancellationToken);
+                var result = await client.PostAsJsonAsync(this.configuration.BaseUrl, new List<TweetDto> { message }, cancellationToken);
 
                 if (result is null || !result.IsSuccessStatusCode)
                 {
@@ -69,7 +67,7 @@ public sealed class SimpleProducerWrapper : ISimpleProducerWrapper
                 }
                 else
                 {
-                    this.logger.LogInformation(ProducerLogMessages.Success, DateTime.Now, result.StatusCode, message.Id);
+                    this.logger.LogDebug(ProducerLogMessages.Success, DateTime.Now, result.StatusCode, message.Id);
 
                     return;
                 }

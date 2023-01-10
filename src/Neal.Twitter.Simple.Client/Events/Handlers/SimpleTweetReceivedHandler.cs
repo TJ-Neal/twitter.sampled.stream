@@ -4,6 +4,9 @@ using Neal.Twitter.Simple.Client.Interfaces;
 
 namespace Neal.Twitter.Simple.Client.Events.Handlers;
 
+/// <summary>
+/// Client handler for the Simple repository for when a Tweet event is raised.
+/// </summary>
 public class SimpleTweetReceivedHandler : INotificationHandler<TweetReceivedNotification>
 {
     #region Fields

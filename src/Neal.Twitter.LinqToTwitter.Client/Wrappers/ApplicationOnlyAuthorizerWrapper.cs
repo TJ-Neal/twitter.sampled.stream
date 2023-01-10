@@ -4,6 +4,9 @@ using System.Net;
 
 namespace Neal.Twitter.LinqToTwitter.Client.Wrappers;
 
+/// <summary>
+/// <inheritdoc cref="IApplicationOnlyAuthorizerWrapper"/>
+/// </summary>
 public class ApplicationOnlyAuthorizerWrapper : IApplicationOnlyAuthorizerWrapper
 {
     #region Fields

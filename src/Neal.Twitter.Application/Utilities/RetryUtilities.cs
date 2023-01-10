@@ -2,6 +2,9 @@
 
 namespace Neal.Twitter.Application.Utilities;
 
+/// <summary>
+/// Utility to provide retry functionality to web requests with exponential back-off and maximum retries.
+/// </summary>
 public static class RetryUtilities
 {
     private const int EXPONENT = 2;

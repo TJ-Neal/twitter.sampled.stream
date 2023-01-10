@@ -1,5 +1,8 @@
 ﻿namespace Neal.Twitter.LinqToTwitter.Client.Constants;
 
+/// <summary>
+/// Represents messages for logging Sampled Stream events and statuses.
+/// </summary>
 public struct SampledStreamLogMessages
 {
     #region Fields

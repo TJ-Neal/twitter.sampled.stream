@@ -3,42 +3,6 @@ name: neal-twitter
 # Services to be deployed to Docker containers
 services:
     # Neal-Twitter API Services
-    neal-twitter-kafka-tweet-api:
-        profiles: [ kafka-only, all ]
-        image: ${KAFKA_TWEET_API_NAME}:latest
-        container_name: ${KAFKA_TWEET_API_NAME}
-        hostname: ${KAFKA_TWEET_API_NAME}
-        build:
-            context: ${SRC_BUILD_CONTEXT}
-            dockerfile: Neal.Twitter.Infrastructure.Kafka.Tweet.API/${DOCKER_FILE_NAME}
-        networks:
-            - ${INFRASTRUCTURE_NETWORK_NAME}
-        ports:
-            - ${KAFKA_TWEET_EXTERNAL_PORT}:${HTTP_PORT}
-            - ${KAFKA_TWEET_EXTERNAL_PORT_SSL}:${HTTPS_PORT}
-        environment:
-            - TMPDIR=/var/lib/${KAFKA_TWEET_API_NAME}
-        volumes:
-            - ${ROOT_LOGS_PATH}/${KAFKA_TWEET_API_NAME}:/var/lib/${KAFKA_TWEET_API_NAME}:rw
-            
-    neal-twitter-faster-api:
-        profiles: [ faster-only, all ]
-        image: ${FASTER_API_NAME}:latest
-        container_name: ${FASTER_API_NAME}
-        hostname: ${FASTER_API_NAME}
-        build:
-            context: ${SRC_BUILD_CONTEXT}
-            dockerfile: Neal.Twitter.Infrastructure.Faster.API/${DOCKER_FILE_NAME}
-        networks:
-            - ${INFRASTRUCTURE_NETWORK_NAME}
-        ports:
-            - ${FASTER_EXTERNAL_PORT}:${HTTP_PORT}
-            - ${FASTER_EXTERNAL_PORT_SSL}:${HTTPS_PORT}
-        environment:
-            - TMPDIR=/var/lib/${FASTER_API_NAME}
-        volumes:
-            - ${ROOT_LOGS_PATH}/${FASTER_API_NAME}:/var/lib/${FASTER_API_NAME}:rw
-
     neal-twitter-simple-api:
         profiles: [ simple-only, all ]
         image: ${SIMPLE_API_NAME}:latest
@@ -52,10 +16,40 @@ services:
         ports:
             - ${SIMPLE_EXTERNAL_PORT}:${HTTP_PORT}
             - ${SIMPLE_EXTERNAL_PORT_SSL}:${HTTPS_PORT}
-        environment:
-            - TMPDIR=/var/lib/${SIMPLE_API_NAME}
         volumes:
-            - ${ROOT_LOGS_PATH}/${SIMPLE_API_NAME}:/var/lib/${SIMPLE_API_NAME}:rw
+            - ${ROOT_LOGS_PATH}/${SIMPLE_API_NAME}:/app/tmp:rw
+
+    neal-twitter-faster-api:
+        profiles: [ faster-only, all ]
+        image: ${FASTER_API_NAME}:latest
+        container_name: ${FASTER_API_NAME}
+        hostname: ${FASTER_API_NAME}
+        build:
+            context: ${SRC_BUILD_CONTEXT}
+            dockerfile: Neal.Twitter.Infrastructure.Faster.API/${DOCKER_FILE_NAME}
+        networks:
+            - ${INFRASTRUCTURE_NETWORK_NAME}
+        ports:
+            - ${FASTER_EXTERNAL_PORT}:${HTTP_PORT}
+            - ${FASTER_EXTERNAL_PORT_SSL}:${HTTPS_PORT}
+        volumes:
+            - ${ROOT_LOGS_PATH}/${FASTER_API_NAME}:/app/tmp:rw
+
+    neal-twitter-kafka-tweet-api:
+        profiles: [ kafka-only, all ]
+        image: ${KAFKA_TWEET_API_NAME}:latest
+        container_name: ${KAFKA_TWEET_API_NAME}
+        hostname: ${KAFKA_TWEET_API_NAME}
+        build:
+            context: ${SRC_BUILD_CONTEXT}
+            dockerfile: Neal.Twitter.Infrastructure.Kafka.Tweet.API/${DOCKER_FILE_NAME}
+        networks:
+            - ${INFRASTRUCTURE_NETWORK_NAME}
+        ports:
+            - ${KAFKA_TWEET_EXTERNAL_PORT}:${HTTP_PORT}
+            - ${KAFKA_TWEET_EXTERNAL_PORT_SSL}:${HTTPS_PORT}
+        volumes:
+            - ${ROOT_LOGS_PATH}/${KAFKA_TWEET_API_NAME}:/app/tmp:rw          
 
     ## KafDrop Kafka monitory tool
     kafdrop:
@@ -65,7 +59,7 @@ services:
         container_name: ${KAFDROP_NAME}
         restart: unless-stopped
         depends_on:
-            kafka-zookeeper-1:
+            kafka-zookeeper:
                 condition: service_healthy
             kafka-server-1:
                 condition: service_healthy
@@ -77,34 +71,34 @@ services:
             KAFKA_BROKERCONNECT: ${KAFKA_NAME_BASE}1:${KAFKA_INTERNAL_PORT_BASE}1
             JVM_OPTS: "-Xms16M -Xmx48M -Xss180K -XX:-TieredCompilation -XX:+UseStringDeduplication -noverify"
 
-    # Kafka Zookeeper Services - Cluster externally accessed through [host IP address]:${ZOOKEEPER_SERVER_PORT_EXTERNAL}
-    kafka-zookeeper-1: # Zookeeer instance 1
+    # Kafka Zookeeper Service
+    kafka-zookeeper:
         profiles: [ kafka-only, all ]
         image: ${CONFLUENT_REPOSITORY}/${ZOOKEEPER_IMAGE_NAME}:${CONFLUENT_VERSION_TAG}
-        container_name: ${ZOOKEEPER_NAME_BASE}1
-        hostname: ${ZOOKEEPER_NAME_BASE}1
+        container_name: ${ZOOKEEPER_NAME}
+        hostname: ${ZOOKEEPER_NAME}
         user: ${DEFAULT_LINUX_USER}
         healthcheck:
-            test: echo srvr | nc ${ZOOKEEPER_NAME_BASE}1 ${ZOOKEEPER_CLIENT_PORT_BASE}1 || exit ${FAILED_HEALTH_EXIT_CODE}
+            test: echo srvr | nc ${ZOOKEEPER_NAME} ${ZOOKEEPER_CLIENT_PORT} || exit ${FAILED_HEALTH_EXIT_CODE}
             retries: 20
             interval: 20s
         restart: unless-stopped
         networks:
             - ${INFRASTRUCTURE_NETWORK_NAME}
         ports:
-            - ${ZOOKEEPER_CLIENT_PORT_BASE}1:${ZOOKEEPER_CLIENT_PORT_BASE}1
+            - ${ZOOKEEPER_CLIENT_PORT}:${ZOOKEEPER_CLIENT_PORT}
         environment:
             ZOOKEEPER_SERVER_ID: 1
             ZOOKEEPER_SERVERS: 0.0.0.0:${ZOOKEEPER_SERVER_PORT_EXTERNAL}:${ZOOKEEPER_SERVER_PORT_INTERNAL}
-            ZOOKEEPER_CLIENT_PORT: ${ZOOKEEPER_CLIENT_PORT_BASE}1
+            ZOOKEEPER_CLIENT_PORT: ${ZOOKEEPER_CLIENT_PORT}
             ZOOKEEPER_TICK_TIME: 2000
             ZOOKEEPER_SYNC_LIMIT: 3
             LOG_DIRS: /var/lib/zookeeper/log
             DATA_DIR: /var/lib/zookeeper/data
         volumes:
-            - ${ROOT_DATA_PATH}/${ZOOKEEPER_NAME_BASE}1:/var/lib/zookeeper/data:rw
-            - ${ROOT_LOGS_PATH}/${ZOOKEEPER_NAME_BASE}1:/var/lib/zookeeper/log:rw
-            - ${ROOT_DATA_PATH}/${ZOOKEEPER_NAME_BASE}1:/var/lib/zookeeper:rw
+            - ${ROOT_DATA_PATH}/${ZOOKEEPER_NAME}:/var/lib/zookeeper/data:rw
+            - ${ROOT_LOGS_PATH}/${ZOOKEEPER_NAME}:/var/lib/zookeeper/log:rw
+            - ${ROOT_DATA_PATH}/${ZOOKEEPER_NAME}:/var/lib/zookeeper:rw
 
     #Kafka Server Services
     kafka-server-1: # Kafka broker instance 1
@@ -120,7 +114,7 @@ services:
             retries: 4
         restart: unless-stopped
         depends_on:
-            kafka-zookeeper-1:
+            kafka-zookeeper:
                 condition: service_healthy
         networks:
             - ${INFRASTRUCTURE_NETWORK_NAME}
@@ -144,12 +138,106 @@ services:
                 DOCKER:${KAFKA_DEFAULT_PROTOCOL},
                 TOKEN:${KAFKA_DEFAULT_PROTOCOL},
                 PLAINTEXT:${KAFKA_DEFAULT_PROTOCOL}
-            KAFKA_ZOOKEEPER_CONNECT: ${ZOOKEEPER_NAME_BASE}1:${ZOOKEEPER_CLIENT_PORT_BASE}1
+            KAFKA_ZOOKEEPER_CONNECT: ${ZOOKEEPER_NAME}:${ZOOKEEPER_CLIENT_PORT}
             KAFKA_JMX_PORT: ${KAFKA_JMX_PORT_BASE}1
             KAFKA_CREATE_TOPICS: ${TOPIC_NAME}:${TOPIC_PARTITIONS}:${TOPIC_REPLICAS}:${TOPIC_CLEANUP_POLICY}
         volumes:
             - ${ROOT_LOGS_PATH}/${KAFKA_NAME_BASE}1/docker-sock:/var/run/docker-sock:rw
             - ${ROOT_DATA_PATH}/${KAFKA_NAME_BASE}1/data:/var/lib/kafka/data:rw
+
+    #Kafka Server Services
+    kafka-server-2: # Kafka broker instance 2
+        profiles: [ kafka-only, all ]
+        image: ${CONFLUENT_REPOSITORY}/${KAFKA_SERVER_IMAGE_NAME}:${CONFLUENT_VERSION_TAG}
+        container_name: ${KAFKA_NAME_BASE}2
+        hostname: ${KAFKA_NAME_BASE}2
+        user: ${DEFAULT_LINUX_USER}
+        healthcheck:
+            test: nc -z ${KAFKA_NAME_BASE}2 ${KAFKA_INTERNAL_PORT_BASE}2 || exit ${FAILED_HEALTH_EXIT_CODE}
+            interval: 30s
+            timeout: 10s
+            retries: 4
+        restart: unless-stopped
+        depends_on:
+            kafka-zookeeper:
+                condition: service_healthy
+            kafka-server-1:
+                condition: service_healthy
+        networks:
+            - ${INFRASTRUCTURE_NETWORK_NAME}
+        ports:
+            - ${KAFKA_EXTERNAL_PORT_BASE}2:${KAFKA_EXTERNAL_PORT_BASE}2
+            - ${KAFKA_DOCKER_PORT_BASE}2:${KAFKA_DOCKER_PORT_BASE}2
+            - ${KAFKA_TOKEN_PORT_BASE}2:${KAFKA_TOKEN_PORT_BASE}2
+        env_file: ${KAFKA_SERVER_ENV_FILE}
+        environment:
+            KAFKA_BROKER_ID: 2
+            KAFKA_ADVERTISED_HOST_NAME: ${KAFKA_NAME_BASE}2
+            KAFKA_ADVERTISED_LISTENERS:
+                EXTERNAL://${DOCKER_HOST_IP:-127.0.0.1}:${KAFKA_EXTERNAL_PORT_BASE}2,
+                INTERNAL://${KAFKA_NAME_BASE}2:${KAFKA_INTERNAL_PORT_BASE}2,
+                DOCKER://host.docker.internal:${KAFKA_DOCKER_PORT_BASE}2,
+                TOKEN://${KAFKA_NAME_BASE}2:${KAFKA_TOKEN_PORT_BASE}2,
+                PLAINTEXT://${KAFKA_NAME_BASE}2:${KAFKA_PLAINTEXT_PORT_BASE}2
+            KAFKA_LISTENER_SECURITY_PROTOCOL_MAP:
+                EXTERNAL:${KAFKA_DEFAULT_PROTOCOL},
+                INTERNAL:${KAFKA_DEFAULT_PROTOCOL},
+                DOCKER:${KAFKA_DEFAULT_PROTOCOL},
+                TOKEN:${KAFKA_DEFAULT_PROTOCOL},
+                PLAINTEXT:${KAFKA_DEFAULT_PROTOCOL}
+            KAFKA_ZOOKEEPER_CONNECT: ${ZOOKEEPER_NAME}:${ZOOKEEPER_CLIENT_PORT}
+            KAFKA_JMX_PORT: ${KAFKA_JMX_PORT_BASE}2
+            KAFKA_CREATE_TOPICS: ${TOPIC_NAME}:${TOPIC_PARTITIONS}:${TOPIC_REPLICAS}:${TOPIC_CLEANUP_POLICY}
+        volumes:
+            - ${ROOT_LOGS_PATH}/${KAFKA_NAME_BASE}2/docker-sock:/var/run/docker-sock:rw
+            - ${ROOT_DATA_PATH}/${KAFKA_NAME_BASE}2/data:/var/lib/kafka/data:rw
+
+    #Kafka Server Services
+    kafka-server-3: # Kafka broker instance 3
+        profiles: [ kafka-only, all ]
+        image: ${CONFLUENT_REPOSITORY}/${KAFKA_SERVER_IMAGE_NAME}:${CONFLUENT_VERSION_TAG}
+        container_name: ${KAFKA_NAME_BASE}3
+        hostname: ${KAFKA_NAME_BASE}3
+        user: ${DEFAULT_LINUX_USER}
+        healthcheck:
+            test: nc -z ${KAFKA_NAME_BASE}3 ${KAFKA_INTERNAL_PORT_BASE}3 || exit ${FAILED_HEALTH_EXIT_CODE}
+            interval: 30s
+            timeout: 10s
+            retries: 4
+        restart: unless-stopped
+        depends_on:
+            kafka-zookeeper:
+                condition: service_healthy
+            kafka-server-1:
+                condition: service_healthy
+        networks:
+            - ${INFRASTRUCTURE_NETWORK_NAME}
+        ports:
+            - ${KAFKA_EXTERNAL_PORT_BASE}3:${KAFKA_EXTERNAL_PORT_BASE}3
+            - ${KAFKA_DOCKER_PORT_BASE}3:${KAFKA_DOCKER_PORT_BASE}3
+            - ${KAFKA_TOKEN_PORT_BASE}3:${KAFKA_TOKEN_PORT_BASE}3
+        env_file: ${KAFKA_SERVER_ENV_FILE}
+        environment:
+            KAFKA_BROKER_ID: 3
+            KAFKA_ADVERTISED_HOST_NAME: ${KAFKA_NAME_BASE}3
+            KAFKA_ADVERTISED_LISTENERS:
+                EXTERNAL://${DOCKER_HOST_IP:-127.0.0.1}:${KAFKA_EXTERNAL_PORT_BASE}3,
+                INTERNAL://${KAFKA_NAME_BASE}3:${KAFKA_INTERNAL_PORT_BASE}3,
+                DOCKER://host.docker.internal:${KAFKA_DOCKER_PORT_BASE}3,
+                TOKEN://${KAFKA_NAME_BASE}3:${KAFKA_TOKEN_PORT_BASE}3,
+                PLAINTEXT://${KAFKA_NAME_BASE}3:${KAFKA_PLAINTEXT_PORT_BASE}3
+            KAFKA_LISTENER_SECURITY_PROTOCOL_MAP:
+                EXTERNAL:${KAFKA_DEFAULT_PROTOCOL},
+                INTERNAL:${KAFKA_DEFAULT_PROTOCOL},
+                DOCKER:${KAFKA_DEFAULT_PROTOCOL},
+                TOKEN:${KAFKA_DEFAULT_PROTOCOL},
+                PLAINTEXT:${KAFKA_DEFAULT_PROTOCOL}
+            KAFKA_ZOOKEEPER_CONNECT: ${ZOOKEEPER_NAME}:${ZOOKEEPER_CLIENT_PORT}
+            KAFKA_JMX_PORT: ${KAFKA_JMX_PORT_BASE}3
+            KAFKA_CREATE_TOPICS: ${TOPIC_NAME}:${TOPIC_PARTITIONS}:${TOPIC_REPLICAS}:${TOPIC_CLEANUP_POLICY}
+        volumes:
+            - ${ROOT_LOGS_PATH}/${KAFKA_NAME_BASE}3/docker-sock:/var/run/docker-sock:rw
+            - ${ROOT_DATA_PATH}/${KAFKA_NAME_BASE}3/data:/var/lib/kafka/data:rw
 
 # Shared network definitions
 networks:

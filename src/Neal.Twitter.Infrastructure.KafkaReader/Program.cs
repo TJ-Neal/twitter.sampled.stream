@@ -1,9 +1,19 @@
-﻿using Neal.Twitter.Application.Constants.Messages;
-using Neal.Twitter.Application.Interfaces.TweetRepository;
-using Neal.Twitter.Infrastructure.Faster.Repository.Services.Repository;
+﻿using Confluent.Kafka;
+using Neal.Twitter.Application.Constants.Messages;
+using Neal.Twitter.Core.Entities.Configuration;
 using Neal.Twitter.Infrastructure.KafkaReader.Services.Kafka;
 using Neal.Twitter.Kafka.Client.Interfaces;
 using Neal.Twitter.Kafka.Client.Wrappers;
+
+// Define thread to periodically send warning messages for heartbeats
+var heartbeatThread = new Thread(new ThreadStart(() =>
+{
+    while (true)
+    {
+        Thread.Sleep(TimeSpan.FromMinutes(1));
+        Log.Information($"{nameof(KafkaConsumerService)} heartbeat good");
+    }
+}));
 
 try
 {
@@ -18,7 +28,7 @@ try
         .ReadFrom.Configuration(configuration)
         .CreateLogger();
 
-    Log.Warning(ApplicationStatusMessages.Started);
+    Log.Information(ApplicationStatusMessages.Started);
 
     // Configure and build Host Service
     var host = Host.CreateDefaultBuilder(args)
@@ -37,15 +47,23 @@ try
                     options.AddSerilog(dispose: true);
                 });
 
+            var wrapperConfiguration = configuration
+                .GetSection(nameof(WrapperConfiguration<ConsumerConfig>))
+                .Get<WrapperConfiguration<ConsumerConfig>>()
+                    ?? new WrapperConfiguration<ConsumerConfig>();
+
             services
+                .AddHttpClient()
+                .AddSingleton(wrapperConfiguration)
                 .AddSingleton<IKafkaConsumerWrapper<string, string>, KafkaConsumerWrapper>()
-                .AddSingleton<ITweetRepository, FasterTweetRepository>() // Single instance of Tweet Repository with persistence
                 .AddHostedService<KafkaConsumerService>(); // Add the hosted service for reading the twitter stream
         })
         .UseSerilog()
         .Build();
 
     Log.Information(ApplicationStatusMessages.HostedServiceStarting);
+
+    heartbeatThread.Start();
 
     // Start hosted service execution
     await host.RunAsync();

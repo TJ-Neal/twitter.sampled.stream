@@ -1,33 +1,29 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using MediatR;
 using Microsoft.Extensions.DependencyInjection;
-using Neal.Twitter.Application.Constants.Keys;
+using Neal.Twitter.Core.Entities.Configuration;
 using Neal.Twitter.Simple.Client.Events.Handlers;
 using Neal.Twitter.Simple.Client.Interfaces;
 using Neal.Twitter.Simple.Client.Wrappers;
 
 namespace Neal.Twitter.Simple.Client.Extensions;
 
+/// <summary>
+/// Add the required types for dependency injection when the Simple client and repository are enabled according to the provided <see cref="SimpleConfiguration"/>.
+/// </summary>
 public static class SimpleClientServiceCollectionExtensions
 {
-    public static IServiceCollection AddSimpleRepositoryHandlerIfEnabled(this IServiceCollection services, IConfiguration configuration, List<Type> mediatrTypes)
+    public static IServiceCollection AddSimpleRepositoryHandlerIfEnabled(this IServiceCollection services, SimpleConfiguration simpleConfiguration)
     {
-        // TODO: Create a model to do this
-        bool isEnabled = configuration
-            ?.GetSection(ApplicationConfigurationKeys.Simple)
-            ?.GetValue<bool>(ApplicationConfigurationKeys.Enabled)
-                ?? false;
-
-        if (!isEnabled)
+        if (!simpleConfiguration.Enabled)
         {
             return services;
         }
 
         services
             .AddHttpClient()
-            .AddSingleton(typeof(ISimpleProducerWrapper), typeof(SimpleProducerWrapper));
-
-        mediatrTypes
-            .Add(typeof(SimpleTweetReceivedHandler));
+            .AddSingleton(simpleConfiguration)
+            .AddSingleton(typeof(ISimpleProducerWrapper), typeof(SimpleProducerWrapper))
+            .AddMediatR(typeof(SimpleTweetReceivedHandler));
 
         return services;
     }

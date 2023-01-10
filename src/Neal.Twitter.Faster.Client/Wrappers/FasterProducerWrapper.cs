@@ -1,8 +1,7 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using Neal.Twitter.Application.Constants.Keys;
+﻿using Microsoft.Extensions.Logging;
 using Neal.Twitter.Application.Constants.Messages;
 using Neal.Twitter.Application.Utilities;
+using Neal.Twitter.Core.Entities.Configuration;
 using Neal.Twitter.Core.Entities.Twitter;
 using Neal.Twitter.Faster.Client.Constants;
 using Neal.Twitter.Faster.Client.Interfaces;
@@ -10,11 +9,14 @@ using System.Net.Http.Json;
 
 namespace Neal.Twitter.Faster.Client.Wrappers;
 
+/// <summary>
+/// <inheritdoc cref="IFasterProducerWrapper" />
+/// </summary>
 public sealed class FasterProducerWrapper : IFasterProducerWrapper
 {
     #region Fields
 
-    private readonly IConfiguration configuration;
+    private readonly FasterConfiguration configuration;
 
     private readonly ILogger<FasterProducerWrapper> logger;
 
@@ -25,30 +27,26 @@ public sealed class FasterProducerWrapper : IFasterProducerWrapper
     #endregion Fields
 
     public FasterProducerWrapper(
-        IConfiguration configuration,
+        FasterConfiguration fasterConfiguration,
         ILogger<FasterProducerWrapper> logger,
         IHttpClientFactory clientFactory)
     {
-        this.configuration = configuration;
+        this.configuration = fasterConfiguration;
         this.logger = logger;
         this.clientFactory = clientFactory;
     }
 
     public async Task ProduceAsync(TweetDto message, CancellationToken cancellationToken)
     {
-        if (hasFaulted
+        // TODO: Create a timer for resetting faulted so producers can retry after t time
+        if (!this.configuration.Enabled
+            || hasFaulted
             || cancellationToken.IsCancellationRequested)
         {
             return;
         }
 
-        // TODO: Use faster model
-        string baseUrl = this.configuration
-            .GetSection(ApplicationConfigurationKeys.Faster)
-            .GetValue<string>(ApplicationConfigurationKeys.BaseUrl)
-                ?? string.Empty;
-
-        if (string.IsNullOrEmpty(baseUrl))
+        if (string.IsNullOrEmpty(this.configuration.BaseUrl))
         {
             throw new InvalidOperationException(CommonLogMessages.InvalidConfiguration);
         }
@@ -61,22 +59,22 @@ public sealed class FasterProducerWrapper : IFasterProducerWrapper
             {
                 using var client = clientFactory.CreateClient();
 
-                var result = await client.PostAsJsonAsync(baseUrl, new List<TweetDto> { message }, cancellationToken);
+                var result = await client.PostAsJsonAsync(this.configuration.BaseUrl, new List<TweetDto> { message }, cancellationToken);
 
                 if (result is null || !result.IsSuccessStatusCode)
                 {
-                    this.logger.LogError(ProducerLogMessages.ProducerError, message.Id, message);
+                    this.logger.LogError(HandlerLogMessages.ProducerError, message.Id, message);
                 }
                 else
                 {
-                    this.logger.LogInformation(ProducerLogMessages.PrintResult, DateTime.Now, result.StatusCode, message.Id);
+                    this.logger.LogDebug(HandlerLogMessages.PrintResult, DateTime.Now, result.StatusCode, message.Id);
 
                     return;
                 }
             }
             catch (Exception ex)
             {
-                this.logger.LogCritical(ProducerLogMessages.ProducerException, ex.Message);
+                this.logger.LogCritical(HandlerLogMessages.ProducerException, ex.Message);
 
                 // Exit loop if exception is not transient
                 if (!RetryUtilities.ExceptionIsTransient(ex))

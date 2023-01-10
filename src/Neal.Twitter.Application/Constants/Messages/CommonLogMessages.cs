@@ -1,5 +1,8 @@
 ﻿namespace Neal.Twitter.Application.Constants.Messages;
 
+/// <summary>
+/// Represents strings for the common log messages used in the application.
+/// </summary>
 public struct CommonLogMessages
 {
     public const string CanceledException = "Task canceled with exception.";

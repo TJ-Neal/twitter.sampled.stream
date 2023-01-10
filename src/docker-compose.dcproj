@@ -6,6 +6,7 @@
     <ProjectGuid>ac2c7e83-19ff-4b4c-8fc0-357a620ff1ae</ProjectGuid>
     <DockerServiceName>neal.twitter.docker</DockerServiceName>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DEV_CI|AnyCPU'" />
   <ItemGroup>
     <None Include=".env" />
     <None Include=".env.kafka-server" />

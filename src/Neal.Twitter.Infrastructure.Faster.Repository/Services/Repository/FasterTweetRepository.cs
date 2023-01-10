@@ -1,14 +1,18 @@
 ﻿using FASTER.core;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Neal.Twitter.Application.Constants.Keys;
 using Neal.Twitter.Application.Constants.Messages;
 using Neal.Twitter.Application.Interfaces.TweetRepository;
+using Neal.Twitter.Core.Entities.Configuration;
 using Neal.Twitter.Core.Entities.Twitter;
 using System.Text.Json;
 
 namespace Neal.Twitter.Infrastructure.Faster.Repository.Services.Repository;
 
+/// <summary>
+/// Represents a repository for <see cref="TweetDto"/> using the Microsoft.FASTER (KV) Library consisting of a hybrid in-memory and disk based log with checkpoints.
+/// The hybrid log is stored in the temporary path of the executing environment.
+/// To change the storage location, the temporary path must be set according to your OS requirements.
+/// </summary>
 public sealed class FasterTweetRepository : ITweetRepository
 {
     // Justification - Initializers used in constructor
@@ -46,25 +50,25 @@ public sealed class FasterTweetRepository : ITweetRepository
 
     private readonly ILogger<FasterTweetRepository> logger;
 
-    private int defaultPagesize;
-
-    private int maxPageSize;
-
     #endregion Fields
 
 #pragma warning restore CS8618
 
-    public FasterTweetRepository(ILogger<FasterTweetRepository> logger, IConfiguration configuration)
+    public FasterTweetRepository(ILogger<FasterTweetRepository> logger)
     {
         // TODO: Create a FasterKV configuration model so this can be configured to be project specific
         string rootPath = Path.Combine(Path.GetTempPath(), "Logs", "Faster");
         this.logger = logger;
 
-        // TODO: Create object for this that .Get<Pagination> can handle.
-        this.InitializePagination(configuration);
-
         InstantiateTweetsStore(rootPath);
         InstantiateHashtagsStore(rootPath);
+
+        // Ensure a commit thread is running once tweets have been added at least once
+        if (commitThread is null)
+        {
+            commitThread = new Thread(new ThreadStart(() => this.CommitThread(cancellationTokenSource.Token)));
+            commitThread.Start();
+        }
     }
 
     public void Dispose()
@@ -102,13 +106,6 @@ public sealed class FasterTweetRepository : ITweetRepository
                     .ToList()
                     .ForEach(async hashtag => await hashtagsSession.RMWAsync(hashtag!, 1));
             }
-
-            // Ensure a commit thread is running once tweets have been added at least once
-            if (commitThread is null)
-            {
-                commitThread = new Thread(new ThreadStart(() => CommitThread(cancellationTokenSource.Token)));
-                commitThread.Start();
-            }
         }
         catch (Exception ex)
         {
@@ -119,17 +116,25 @@ public sealed class FasterTweetRepository : ITweetRepository
         hashtagsSessionPool.Return(hashtagsSession);
     }
 
-    public Task<List<TweetDto>> GetAllTweetsAsync(int? page, int? pagesize)
+    public Task<List<TweetDto>> GetAllTweetsAsync(Pagination pagination)
     {
-        int currentPage = page ?? 1;
-        int currentPagesize = pagesize ?? this.defaultPagesize;
         int recordSize = tweetsStore.Log.FixedRecordSize;
         long headAddress = tweetsStore.Log.HeadAddress;
-        long pageBytes = currentPagesize * recordSize;
-        long pageStart = headAddress + ((currentPage - 1) * pageBytes);
+        long pageBytes = pagination.PageSize * recordSize;
+        long pageStart = headAddress + ((pagination.Page - 1) * pageBytes);
         long pageEnd = pageStart + pageBytes;
         var tweetsSession = GetTweetsSession();
         var output = new List<TweetDto>();
+
+        if (pageStart > tweetsStore.Log.TailAddress)
+        {
+            return Task.FromResult(output);
+        }
+
+        if (pageEnd > tweetsStore.Log.TailAddress)
+        {
+            pageEnd = tweetsStore.Log.TailAddress;
+        }
 
         var iterator = tweetsSession.Iterate(pageEnd);
 
@@ -200,22 +205,29 @@ public sealed class FasterTweetRepository : ITweetRepository
 
     #region Private Methods
 
-    private static void CommitThread(CancellationToken cancellationToken)
+    private void CommitThread(CancellationToken cancellationToken)
     {
         while (!cancellationToken.IsCancellationRequested)
         {
-            Thread.Sleep(1000);
+            Thread.Sleep(TimeSpan.FromSeconds(30));
 
             tweetsStore
                 .TakeHybridLogCheckpointAsync(CheckpointType.Snapshot)
                 .AsTask()
                 .GetAwaiter()
                 .GetResult();
+
             hashtagsStore
                 .TakeHybridLogCheckpointAsync(CheckpointType.Snapshot)
                 .AsTask()
                 .GetAwaiter()
                 .GetResult();
+
+            this.logger.LogInformation(
+                ApplicationStatusMessages.TweetCount,
+                nameof(FasterTweetRepository),
+                tweetsStore.EntryCount,
+                hashtagsStore.EntryCount);
         }
     }
 
@@ -266,27 +278,6 @@ public sealed class FasterTweetRepository : ITweetRepository
         hashtagsSessionPool = new AsyncPool<ClientSession<string, int, int, int, Empty, IFunctions<string, int, int, int, Empty>>>(
             settings.LogDevice.ThrottleLimit,
             () => hashtagsStore.For(hashtagsFuncs).NewSession<IFunctions<string, int, int, int, Empty>>());
-    }
-
-    private void InitializePagination(IConfiguration configuration)
-    {
-        var configurationSection = configuration?.GetSection(ApplicationConfigurationKeys.Pagination);
-        int? configuratedMaxPageSize = configurationSection?
-            .GetValue<int>(ApplicationConfigurationKeys.MaximumPageSize);
-
-        this.maxPageSize = !configuratedMaxPageSize.HasValue
-            || configuratedMaxPageSize <= 0
-                ? 1000
-                : configuratedMaxPageSize.Value;
-
-        int? configuredDefaultPageSize = configurationSection?
-            .GetValue<int>(ApplicationConfigurationKeys.DefaultPageSize);
-
-        this.defaultPagesize = !configuredDefaultPageSize.HasValue
-            || configuredDefaultPageSize <= 0
-            || configuredDefaultPageSize >= maxPageSize
-                ? 50
-                : configuredDefaultPageSize.Value;
     }
 
     #endregion Initialization

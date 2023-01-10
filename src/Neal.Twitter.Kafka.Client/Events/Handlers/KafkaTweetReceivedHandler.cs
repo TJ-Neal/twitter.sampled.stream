@@ -1,11 +1,10 @@
 ﻿using Confluent.Kafka;
 using MediatR;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Neal.Twitter.Application.Events.Notifications;
+using Neal.Twitter.Core.Entities.Configuration;
 using Neal.Twitter.Core.Entities.Kafka;
 using Neal.Twitter.Core.Entities.Twitter;
-using Neal.Twitter.Kafka.Client.Constants;
 using Neal.Twitter.Kafka.Client.Interfaces;
 
 namespace Neal.Twitter.Kafka.Client.Events.Handlers;
@@ -25,13 +24,11 @@ public class KafkaTweetReceivedHandler : INotificationHandler<TweetReceivedNotif
 
     #endregion Fields
 
-    public KafkaTweetReceivedHandler(IConfiguration configuration, IKafkaProducerWrapper kafkaProducer, ILogger<KafkaTweetReceivedHandler> logger)
+    public KafkaTweetReceivedHandler(IKafkaProducerWrapper kafkaProducer, ILogger<KafkaTweetReceivedHandler> logger, WrapperConfiguration<ProducerConfig> wrapperConfiguration)
     {
-        // TODO: Create Kafka model to convert this
-        this.topic = configuration
-            ?.GetSection(ConfigurationKeys.Kafka)
-            ?.GetValue<string>(ConfigurationKeys.Topic)
-                ?? throw new KafkaException(ErrorCode.Local_UnknownTopic);
+        this.topic = string.IsNullOrEmpty(wrapperConfiguration.Topic)
+                ? throw new KafkaException(ErrorCode.Local_UnknownTopic)
+                : wrapperConfiguration.Topic;
         this.kafkaProducerWrapper = kafkaProducer;
         this.logger = logger;
     }
@@ -47,21 +44,21 @@ public class KafkaTweetReceivedHandler : INotificationHandler<TweetReceivedNotif
     {
         if (notification is null)
         {
-            this.logger.LogInformation("Notification that is null received; unable to process.");
+            this.logger.LogDebug("Notification that is null received; unable to process.");
 
             return;
         }
 
         if (notification.Tweet is null)
         {
-            this.logger.LogInformation("Notification with null tweet received; unable to process.");
+            this.logger.LogDebug("Notification with null tweet received; unable to process.");
 
             return;
         }
 
-        if (notification.Tweet is null)
+        if (notification.Tweet.Id is null)
         {
-            this.logger.LogInformation("Tweet with no ID received; unable to process.");
+            this.logger.LogDebug("Tweet with no ID received; unable to process.");
 
             return;
         }
@@ -80,6 +77,4 @@ public class KafkaTweetReceivedHandler : INotificationHandler<TweetReceivedNotif
     }
 
     #endregion INotificationHandler Implementation
-
-    public override int GetHashCode() => base.GetHashCode();
 }

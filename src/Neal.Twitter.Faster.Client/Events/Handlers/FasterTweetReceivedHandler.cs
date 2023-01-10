@@ -4,6 +4,9 @@ using Neal.Twitter.Faster.Client.Interfaces;
 
 namespace Neal.Twitter.Faster.Client.Events.Handlers;
 
+/// <summary>
+/// Client handler for the FasterKV repository for when a Tweet event is raised.
+/// </summary>
 public class FasterTweetReceivedHandler : INotificationHandler<TweetReceivedNotification>
 {
     private readonly IFasterProducerWrapper tweetRepositoryProducerWrapper;

@@ -1,10 +1,22 @@
-using MediatR;
+using Confluent.Kafka;
+using LinqToTwitter.OAuth;
 using Neal.Twitter.Application.Constants.Messages;
+using Neal.Twitter.Core.Entities.Configuration;
 using Neal.Twitter.Faster.Client.Extensions;
 using Neal.Twitter.Infrastructure.StreamReader.Extensions;
 using Neal.Twitter.Infrastructure.StreamReader.Services.TwitterApi.V2;
 using Neal.Twitter.Kafka.Client.Extensions;
 using Neal.Twitter.Simple.Client.Extensions;
+
+// Define thread to periodically send log messages for heartbeats
+var heartbeatThread = new Thread(new ThreadStart(() =>
+{
+    while (true)
+    {
+        Thread.Sleep(TimeSpan.FromMinutes(1));
+        Log.Information($"{nameof(TwitterStreamReaderService)} heartbeat good");
+    }
+}));
 
 try
 {
@@ -19,7 +31,30 @@ try
         .ReadFrom.Configuration(configuration)
         .CreateLogger();
 
-    Log.Warning(ApplicationStatusMessages.Started);
+    Log.Information(ApplicationStatusMessages.Started);
+
+    // Load configurations from appsettings for individual services
+    var inMemoryCredentialStore = configuration
+        .GetSection(nameof(InMemoryCredentialStore))
+        .Get<InMemoryCredentialStore>()
+            ?? new InMemoryCredentialStore();
+    var kafkaProducerConfiguration = configuration
+        .GetSection(nameof(WrapperConfiguration<ProducerConfig>))
+        .Get<WrapperConfiguration<ProducerConfig>>()
+            ?? new WrapperConfiguration<ProducerConfig>();
+    var fasterConfiguration = configuration
+        .GetSection(nameof(FasterConfiguration))
+        .Get<FasterConfiguration>()
+            ?? new FasterConfiguration();
+    var simpleConfiguration = configuration
+        .GetSection(nameof(SimpleConfiguration))
+        .Get<SimpleConfiguration>()
+            ?? new SimpleConfiguration();
+
+    // Output the enabled state of services at warning to make sure they are visible to all environments
+    Log.Information($"Kafka client enabled [{kafkaProducerConfiguration.Enabled}]");
+    Log.Information($"Faster client enabled [{fasterConfiguration.Enabled}]");
+    Log.Information($"Simple client enabled [{simpleConfiguration.Enabled}]");
 
     // Configure and build Host Service
     var host = Host.CreateDefaultBuilder(args)
@@ -38,20 +73,19 @@ try
                     options.AddSerilog(dispose: true);
                 });
 
-            var mediatRTypes = new List<Type>();
-
             services
-                .AddTwitterStreamConsumer(configuration) // Add twitter stream classes as configured
-                .AddKafkaHandlerIfEnabled(configuration, mediatRTypes)
-                .AddFasterRepositoryHandlerIfEnabled(configuration, mediatRTypes)
-                .AddSimpleRepositoryHandlerIfEnabled(configuration, mediatRTypes)
-                .AddMediatR(mediatRTypes.ToArray())
+                .AddTwitterStreamConsumer(inMemoryCredentialStore)
+                .AddKafkaHandlerIfEnabled(kafkaProducerConfiguration)
+                .AddFasterRepositoryHandlerIfEnabled(fasterConfiguration)
+                .AddSimpleRepositoryHandlerIfEnabled(simpleConfiguration)
                 .AddHostedService<TwitterStreamReaderService>(); // Add the hosted service for reading the twitter stream
         })
         .UseSerilog()
         .Build();
 
     Log.Information(ApplicationStatusMessages.HostedServiceStarting);
+
+    heartbeatThread.Start();
 
     // Start hosted service execution
     await host.RunAsync();
@@ -64,6 +98,7 @@ catch (Exception ex)
     Console.WriteLine($"{DateTime.UtcNow}Unexpected exception occurred:\n{ex}");
     Log.Fatal(ex, ApplicationStatusMessages.FatalError);
 }
+// Clean up application and ensure log is flushed
 finally
 {
     Log.Information(ApplicationStatusMessages.Stopped);

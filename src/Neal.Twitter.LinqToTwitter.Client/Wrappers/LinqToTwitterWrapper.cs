@@ -12,6 +12,9 @@ using StreamContent = LinqToTwitter.StreamContent;
 
 namespace Neal.Twitter.LinqToTwitter.Client.Wrappers;
 
+/// <summary>
+/// <see cref="ILinqToTwitterWrapper"/>
+/// </summary>
 public class LinqToTwitterWrapper : ILinqToTwitterWrapper
 {
     #region Fields

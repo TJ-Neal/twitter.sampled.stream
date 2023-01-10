@@ -1,10 +1,15 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Neal.Twitter.Application.Constants.Api;
 using Neal.Twitter.Application.Interfaces.TweetRepository;
+using Neal.Twitter.Core.Entities.Configuration;
 using Neal.Twitter.Core.Entities.Twitter;
 
 namespace Neal.Twitter.Infrastructure.Faster.API.Endpoints;
 
+/// <summary>
+/// Represents endpoints for this API to interact with the underlying repository.
+/// This repository uses the Micorsoft.FasterKV package to leverage the advantages of a hybrid store while maintaining the advantages of in-memory and durable design.
+/// </summary>
 public static class RepositoryEndpoints
 {
     public static void MapRepositoryEndpoints(this IEndpointRouteBuilder routes, string groupTag)
@@ -12,7 +17,8 @@ public static class RepositoryEndpoints
         var group = routes.MapGroup(ApiStrings.BaseRoute)
             .WithTags(groupTag);
 
-        group.MapGet(ApiStrings.TweetsRoute, ([FromServices] ITweetRepository model, [FromQuery] int? page, [FromQuery] int? pagesize) => model.GetAllTweetsAsync(page, pagesize))
+        group.MapGet(ApiStrings.TweetsRoute,
+                ([FromServices] ITweetRepository model, [FromQuery] int? page, [FromQuery] int? pageSize) => model.GetAllTweetsAsync(new Pagination(page, pageSize)))
             .WithName(ApiStrings.GetTweetsName)
             .WithDescription(ApiStrings.GetTweetsDescription)
             .WithOpenApi();

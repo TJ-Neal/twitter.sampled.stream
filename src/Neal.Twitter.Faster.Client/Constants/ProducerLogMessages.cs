@@ -1,8 +1,11 @@
 ﻿namespace Neal.Twitter.Faster.Client.Constants;
 
-public struct ProducerLogMessages
+/// <summary>
+/// Represents messages for logging handler events.
+/// </summary>
+public struct HandlerLogMessages
 {
-    public const string PrintResult = "{timestamp}: Faster producer: [status:{@status}] [{@id}].";
+    public const string PrintResult = "{timestamp}: Faster producer: [status:{status}] [{id}].";
 
     public const string ProducerError = "Producer returned an error. Key: {@key}, Value: {@value}";
 

@@ -20,12 +20,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Neal.Twitter.Infrastructure
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UI", "UI", "{FD7ED76B-AB50-4ED4-B225-ABA53F587164}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Neal.Twitter.WebApp", "Neal.Twitter.WebApp\Neal.Twitter.WebApp.csproj", "{BE4847E5-CBA0-4410-96ED-0252D0A3932F}"
-	ProjectSection(ProjectDependencies) = postProject
-		{3CA91DE6-0C42-4DA5-B960-9AB42E4CD4EC} = {3CA91DE6-0C42-4DA5-B960-9AB42E4CD4EC}
-		{A3675161-864E-4E58-BDFE-52A2EEE285AA} = {A3675161-864E-4E58-BDFE-52A2EEE285AA}
-	EndProjectSection
-EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{AC2C7E83-19FF-4B4C-8FC0-357A620FF1AE}"
 	ProjectSection(ProjectDependencies) = postProject
 		{8714AC28-7A47-4F2D-9A6B-4E9A6B02F49D} = {8714AC28-7A47-4F2D-9A6B-4E9A6B02F49D}
@@ -69,13 +63,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Neal.Twitter.Simple.Client.
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "API", "API", "{A0DC19D7-4769-4528-B5BA-CD9E4155D994}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Neal.Twitter.Infrastructure.Faster.Repository", "Neal.Twitter.Infrastructure.Faster.Repository\Neal.Twitter.Infrastructure.Faster.Repository.csproj", "{0F59C94E-1D0A-4AEE-A1A5-6C3FBD8EE49D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Neal.Twitter.Infrastructure.Faster.Repository", "Neal.Twitter.Infrastructure.Faster.Repository\Neal.Twitter.Infrastructure.Faster.Repository.csproj", "{0F59C94E-1D0A-4AEE-A1A5-6C3FBD8EE49D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Neal.Twitter.Infrastructure.Simple.Repository", "Neal.Twitter.Infrastructure.Simple.Repository\Neal.Twitter.Infrastructure.Simple.Repository.csproj", "{A4E5A73F-5611-4B29-88B7-1449B8504E6C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Neal.Twitter.Infrastructure.Simple.Repository", "Neal.Twitter.Infrastructure.Simple.Repository\Neal.Twitter.Infrastructure.Simple.Repository.csproj", "{A4E5A73F-5611-4B29-88B7-1449B8504E6C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Neal.Twitter.Infrastructure.Kafka.Tweet.API", "Neal.Twitter.Infrastructure.Kafka.Tweet.API\Neal.Twitter.Infrastructure.Kafka.Tweet.API.csproj", "{925E400E-FBB2-4FAE-845B-D8CE4F4CFFCE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Neal.Twitter.Infrastructure.Kafka.Tweet.API", "Neal.Twitter.Infrastructure.Kafka.Tweet.API\Neal.Twitter.Infrastructure.Kafka.Tweet.API.csproj", "{925E400E-FBB2-4FAE-845B-D8CE4F4CFFCE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Neal.Twitter.Infrastructure.KafkaReader", "Neal.Twitter.Infrastructure.KafkaReader\Neal.Twitter.Infrastructure.KafkaReader.csproj", "{95B7BDB3-A6C7-4397-A45A-9CA7D2198C60}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Neal.Twitter.Infrastructure.KafkaReader", "Neal.Twitter.Infrastructure.KafkaReader\Neal.Twitter.Infrastructure.KafkaReader.csproj", "{95B7BDB3-A6C7-4397-A45A-9CA7D2198C60}"
+EndProject
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "neal.twitter.reactapp", "Neal.Twitter.ReactApp\neal.twitter.reactapp.esproj", "{8FD7A65A-5A7C-4305-A848-EC770E609A46}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -95,10 +91,6 @@ Global
 		{A28A143B-1C56-4C45-B50B-5D344CE2388A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A28A143B-1C56-4C45-B50B-5D344CE2388A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A28A143B-1C56-4C45-B50B-5D344CE2388A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BE4847E5-CBA0-4410-96ED-0252D0A3932F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BE4847E5-CBA0-4410-96ED-0252D0A3932F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BE4847E5-CBA0-4410-96ED-0252D0A3932F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BE4847E5-CBA0-4410-96ED-0252D0A3932F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{AC2C7E83-19FF-4B4C-8FC0-357A620FF1AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{AC2C7E83-19FF-4B4C-8FC0-357A620FF1AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AC2C7E83-19FF-4B4C-8FC0-357A620FF1AE}.Release|Any CPU.ActiveCfg = Debug|Any CPU
@@ -171,6 +163,12 @@ Global
 		{95B7BDB3-A6C7-4397-A45A-9CA7D2198C60}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{95B7BDB3-A6C7-4397-A45A-9CA7D2198C60}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{95B7BDB3-A6C7-4397-A45A-9CA7D2198C60}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8FD7A65A-5A7C-4305-A848-EC770E609A46}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8FD7A65A-5A7C-4305-A848-EC770E609A46}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8FD7A65A-5A7C-4305-A848-EC770E609A46}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{8FD7A65A-5A7C-4305-A848-EC770E609A46}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8FD7A65A-5A7C-4305-A848-EC770E609A46}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8FD7A65A-5A7C-4305-A848-EC770E609A46}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -179,7 +177,6 @@ Global
 		{A3675161-864E-4E58-BDFE-52A2EEE285AA} = {F3703C32-FF29-4977-8C17-4B759D0D1D19}
 		{3CA91DE6-0C42-4DA5-B960-9AB42E4CD4EC} = {D435F861-C0E4-4BFE-9593-4D88D5452FEE}
 		{A28A143B-1C56-4C45-B50B-5D344CE2388A} = {5830A315-D5B8-44A3-A7B6-33B340B7EA6B}
-		{BE4847E5-CBA0-4410-96ED-0252D0A3932F} = {FD7ED76B-AB50-4ED4-B225-ABA53F587164}
 		{A0987307-ED13-4AC3-AD3F-957D0B747F1C} = {F3703C32-FF29-4977-8C17-4B759D0D1D19}
 		{B847D84F-A968-4B91-9C66-AE10BEEE77E6} = {5830A315-D5B8-44A3-A7B6-33B340B7EA6B}
 		{BC7329B5-E1C9-40B0-8CBA-5C49D72F213B} = {A0987307-ED13-4AC3-AD3F-957D0B747F1C}
@@ -200,6 +197,7 @@ Global
 		{A4E5A73F-5611-4B29-88B7-1449B8504E6C} = {5830A315-D5B8-44A3-A7B6-33B340B7EA6B}
 		{925E400E-FBB2-4FAE-845B-D8CE4F4CFFCE} = {A0DC19D7-4769-4528-B5BA-CD9E4155D994}
 		{95B7BDB3-A6C7-4397-A45A-9CA7D2198C60} = {5830A315-D5B8-44A3-A7B6-33B340B7EA6B}
+		{8FD7A65A-5A7C-4305-A848-EC770E609A46} = {FD7ED76B-AB50-4ED4-B225-ABA53F587164}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {EB5308D1-019A-4682-85DD-CE351686C388}

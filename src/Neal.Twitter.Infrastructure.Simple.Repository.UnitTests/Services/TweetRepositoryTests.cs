@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Neal.Twitter.Core.Entities.Configuration;
 using Neal.Twitter.Core.Entities.Twitter;
 using Neal.Twitter.Infrastructure.Simple.Repository.Services.Repository;
 
@@ -13,17 +14,17 @@ public class TweetRepositoryTests
 
     private readonly ILoggerFactory logFactory = LoggerFactory.Create(logger => logger.AddConsole());
 
-    private readonly TweetRepository tweetRepository;
+    private readonly SimpleTwwetRepository tweetRepository;
 
     #endregion Fields
 
     public TweetRepositoryTests() => this.tweetRepository = new ServiceCollection()
             .AddSingleton<IConfiguration>(new ConfigurationBuilder().Build())
             .AddSingleton<IMemoryCache>(new MemoryCache(new MemoryCacheOptions()))
-            .AddSingleton(this.logFactory.CreateLogger<TweetRepository>())
-            .AddSingleton(typeof(TweetRepository))
+            .AddSingleton(this.logFactory.CreateLogger<SimpleTwwetRepository>())
+            .AddSingleton(typeof(SimpleTwwetRepository))
             .BuildServiceProvider()
-            .GetService<TweetRepository>()
+            .GetService<SimpleTwwetRepository>()
                 ?? throw new InvalidOperationException("Unable to create Tweet Repository.");
 
     [Fact]
@@ -35,7 +36,7 @@ public class TweetRepositoryTests
         // Act
         await service.AddRecordsAsync(new List<TweetDto> { new TweetDto("123", "This is a tweet without hashtags", null) });
 
-        int afterCount = (await service.GetAllTweetsAsync(1, 1)).Count;
+        int afterCount = (await service.GetAllTweetsAsync(new Pagination(1, 1))).Count;
         int afterHashtagsCount = (await service.GetTopHashtags(10)).Count();
 
         // Assert
@@ -58,7 +59,7 @@ public class TweetRepositoryTests
             await service.AddRecordsAsync(new List<TweetDto> { new TweetDto(i.ToString(), i.ToString(), hashtags) });
         }
 
-        int afterCount = (await service.GetAllTweetsAsync(1, numberOfTweets)).Count;
+        int afterCount = (await service.GetAllTweetsAsync(new Pagination(1, numberOfTweets))).Count;
         long totalCount = await service.GetCountAsync();
         int afterHashtagsCount = (await service.GetTopHashtags(10)).Count();
 

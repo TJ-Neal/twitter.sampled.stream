@@ -1,0 +1,41 @@
+* {
+    box-sizing: border-box;
+}
+
+body, html {
+    color: rgba(0, 0, 0, 0.87);
+    font-family: Roboto, Arial, sans-serif;
+    font-size: 1rem;
+    font-weight: 400;
+    height: 100%;
+    letter-spacing: 0.12px;
+    line-height: 2em;
+    margin: 0;
+    min-width: 621px;
+    width: 100%;
+}
+
+main {
+    display: block;
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input::-ms-clear {
+    display: none;
+}
+
+code {
+    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
+
+#root {
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+    width: 100%;
+}

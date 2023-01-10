@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>762e41a9-3c8c-4c7b-b39b-1510b0750e1e</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <Configurations>Debug;Release</Configurations>
   </PropertyGroup>
 
   <ItemGroup>
@@ -38,6 +39,7 @@
     <ProjectReference Include="..\Neal.Twitter.Application\Neal.Twitter.Application.csproj" />
     <ProjectReference Include="..\Neal.Twitter.Core\Neal.Twitter.Core.csproj" />
     <ProjectReference Include="..\Neal.Twitter.Infrastructure.Faster.Repository\Neal.Twitter.Infrastructure.Faster.Repository.csproj" />
+    <ProjectReference Include="..\Neal.Twitter.Infrastructure.Simple.Repository\Neal.Twitter.Infrastructure.Simple.Repository.csproj" />
   </ItemGroup>
 
   <ItemGroup>

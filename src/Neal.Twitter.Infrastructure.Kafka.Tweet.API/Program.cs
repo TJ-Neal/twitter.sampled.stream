@@ -1,4 +1,5 @@
-using Neal.Twitter.Application.Constants.Api;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Neal.Twitter.Application.Constants;
 using Neal.Twitter.Application.Constants.Messages;
 using Neal.Twitter.Application.Interfaces.TweetRepository;
 using Neal.Twitter.Infrastructure.Faster.Repository.Services.Repository;
@@ -6,47 +7,90 @@ using Neal.Twitter.Infrastructure.Kafka.Tweet.API.Endpoints;
 using Serilog;
 using static System.Net.Mime.MediaTypeNames;
 
-var builder = WebApplication
-    .CreateBuilder(args);
-
-// Attach Serilog logger
-Log.Logger = new LoggerConfiguration()
-    .ReadFrom.Configuration(builder.Configuration)
-    .CreateLogger();
-
-Log.Warning(ApplicationStatusMessages.Started);
-
-builder
-    .Services
-    .AddSwaggerGen()
-    .AddEndpointsApiExplorer()
-    .AddProblemDetails()
-    .AddMemoryCache()
-    .AddScoped<ITweetRepository, FasterTweetRepository>(); // Single instance of Tweet Repository with persistence
-
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment()
-    || app.Environment.IsEnvironment("Docker"))
+try
 {
+    var builder = WebApplication
+        .CreateBuilder(args);
+
+    builder
+        .Logging
+        .ClearProviders()
+        .AddSerilog();
+
+    // Attach Serilog logger
+    Log.Logger = new LoggerConfiguration()
+        .ReadFrom.Configuration(builder.Configuration)
+        .CreateLogger();
+
+    Log.Information(ApplicationStatusMessages.Started);
+
+    if (!builder.Environment.IsProduction())
+    {
+        builder
+            .Services
+            .AddCors(options =>
+            {
+                options.AddPolicy("LocalhostPolicy",
+                    builder => builder
+                        .AllowAnyMethod()
+                        .AllowCredentials()
+                        .SetIsOriginAllowed((host) =>
+                            host.Contains("localhost")
+                            || host.Contains("::1")
+                            || host.Contains("127.0.0.1")
+                            || host.Contains("0.0.0.0")) // Allow localhost addresses
+                        .AllowAnyHeader());
+            });
+    }
+
+    builder
+        .Services
+        .AddEndpointsApiExplorer()
+        .AddSwaggerGen()
+        .AddProblemDetails()
+        .AddMemoryCache()
+        .AddSingleton<ITweetRepository, FasterTweetRepository>() // Single instance of Tweet Repository without persistence
+        .AddHealthChecks();
+
+    var app = builder.Build();
+
+    // Configure the HTTP request pipeline.
+    if (!app.Environment.IsProduction())
+    {
+        app
+            .UseCors("LocalhostPolicy")
+            .UseDeveloperExceptionPage()
+            .UseSwagger()
+            .UseSwaggerUI()
+            .UseStatusCodePages(Text.Plain, "Server returned status code: {0}");
+    }
+    else
+    {
+        app
+            .UseExceptionHandler("/Error")
+            .UseHsts();
+    }
+
     app
-        .UseDeveloperExceptionPage()
-        .UseSwagger()
-        .UseSwaggerUI()
-        .UseStatusCodePages(Text.Plain, "Server returned status code: {0}");
+        .UseHealthChecks("/health", new HealthCheckOptions
+        {
+            Predicate = _ => false
+        })
+        .UseRouting()
+        .UseEndpoints(configuration =>
+            configuration.MapRepositoryEndpoints(Names.KafkaApi));
+
+    await app.RunAsync();
 }
-else
+catch (Exception ex)
 {
-    app
-        .UseExceptionHandler("/Error")
-        .UseHsts();
-    // app.UseHealthChecks(Path.Combine(""));
+    // Write to console in case log initialization fails
+    Console.WriteLine($"{DateTime.UtcNow}Unexpected exception occurred:\n{ex}");
+    Log.Fatal(ex, ApplicationStatusMessages.FatalError);
 }
-
-app
-    .UseRouting()
-    .UseEndpoints(configuration =>
-        configuration.MapRepositoryEndpoints(typeof(Program).Assembly.GetName().Name ?? ApiStrings.BaseRoute));
-
-await app.RunAsync();
+// Clean up application and ensure log is flushed
+finally
+{
+    Log.Information(ApplicationStatusMessages.Stopped);
+    Log.CloseAndFlush();
+}

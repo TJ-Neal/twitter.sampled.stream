@@ -1,5 +1,8 @@
 ﻿namespace Neal.Twitter.Simple.Client.Constants;
 
+/// <summary>
+/// Represents messages for logging producer messages.
+/// </summary>
 public struct ProducerLogMessages
 {
     public const string Success = "{timestamp}: Tweet Repository producer status: {status} for message {messageId}.";

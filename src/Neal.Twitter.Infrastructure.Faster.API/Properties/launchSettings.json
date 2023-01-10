@@ -32,7 +32,7 @@
             },
             "publishAllPorts": true,
             "useSSL": false,
-            "DockerfileRunArguments": "-p 4100:4100 -p 4101:4101"
+            "DockerfileRunArguments": "-p 4100:80 -p 4101:443"
         }
     }
 }

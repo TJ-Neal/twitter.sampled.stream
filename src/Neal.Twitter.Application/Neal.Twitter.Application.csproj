@@ -1,10 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>net7.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <UserSecretsId>a6cfe8e1-dcd1-463c-b37c-7fb23d7ff1eb</UserSecretsId>
+        <Configurations>Debug;Release</Configurations>
     </PropertyGroup>
 
     <ItemGroup>
