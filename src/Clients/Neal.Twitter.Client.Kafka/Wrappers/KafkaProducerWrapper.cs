@@ -69,7 +69,7 @@ public class KafkaProducerWrapper : IKafkaProducerWrapper, IDisposable
                     {
                         this.producedCount++;
 
-                        if (this.producedCount / 100M % 10 == 0)
+                        if (this.producedCount % 1000M == 0)
                         {
                             this.logger.LogInformation(
                                 HandlerLogMessages.PrintProducerResult,
