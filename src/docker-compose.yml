@@ -2,15 +2,71 @@ name: neal-twitter
 
 # Services to be deployed to Docker containers
 services:
+    # Neal-Twitter Twitter Stream Reader Services
+    neal-twitter-streamreader:
+        profiles: [ all ]
+        image: ${TWITTER_STREAM_READER_NAME}:latest
+        container_name: ${TWITTER_STREAM_READER_NAME}
+        hostname: ${TWITTER_STREAM_READER_NAME}
+        build:
+            context: ${SRC_BUILD_CONTEXT}
+            dockerfile: Infrastructure/Neal.Twitter.Infrastructure.StreamReader/${DOCKER_FILE_NAME}
+        user: ${DEFAULT_LINUX_USER}
+        depends_on:
+            kafka-zookeeper:
+                condition: service_healthy
+            kafka-server-1:
+                condition: service_healthy
+            kafka-server-2:
+                condition: service_started
+            kafka-server-3:
+                condition: service_started
+        networks:
+            - ${INFRASTRUCTURE_NETWORK_NAME}
+        volumes:
+            - ${ROOT_LOGS_PATH}/${TWITTER_STREAM_READER_NAME}:/app/tmp:rw
+            - ${USER_SECRETS_PATH}:/root/.microsoft/usersecrets/:ro
+
+    # Neal-Twitter Kafka Reader Services
+    neal-twitter-kafkareader:
+        profiles: [ all ]
+        image: ${KAFKA_TWEET_READER_NAME}:latest
+        container_name: ${KAFKA_TWEET_READER_NAME}
+        hostname: ${KAFKA_TWEET_READER_NAME}
+        build:
+            context: ${SRC_BUILD_CONTEXT}
+            dockerfile: Infrastructure/Neal.Twitter.Infrastructure.KafkaReader/${DOCKER_FILE_NAME}
+        user: ${DEFAULT_LINUX_USER}
+        depends_on:
+            kafka-zookeeper:
+                condition: service_healthy
+            kafka-server-1:
+                condition: service_healthy
+            kafka-server-2:
+                condition: service_started
+            kafka-server-3:
+                condition: service_started
+        networks:
+            - ${INFRASTRUCTURE_NETWORK_NAME}
+        volumes:
+            - ${ROOT_LOGS_PATH}/${KAFKA_TWEET_READER_NAME}:/app/tmp:rw
+
     # Neal-Twitter API Services
-    neal-twitter-simple-api:
+    neal-twitter-api-simple:
         profiles: [ simple-only, all ]
         image: ${SIMPLE_API_NAME}:latest
         container_name: ${SIMPLE_API_NAME}
         hostname: ${SIMPLE_API_NAME}
         build:
             context: ${SRC_BUILD_CONTEXT}
-            dockerfile: Neal.Twitter.Infrastructure.Simple.API/${DOCKER_FILE_NAME}
+            dockerfile: API/Neal.Twitter.API.Simple/${DOCKER_FILE_NAME}
+        user: ${DEFAULT_LINUX_USER}
+        healthcheck:
+            test: nc http://localhost ${HTTP_PORT} || exit ${FAILED_HEALTH_EXIT_CODE}
+            retries: 10
+            interval: 60s
+            start_period: 10s
+        restart: unless-stopped
         networks:
             - ${INFRASTRUCTURE_NETWORK_NAME}
         ports:
@@ -19,14 +75,21 @@ services:
         volumes:
             - ${ROOT_LOGS_PATH}/${SIMPLE_API_NAME}:/app/tmp:rw
 
-    neal-twitter-faster-api:
+    neal-twitter-api-faster:
         profiles: [ faster-only, all ]
         image: ${FASTER_API_NAME}:latest
         container_name: ${FASTER_API_NAME}
         hostname: ${FASTER_API_NAME}
         build:
             context: ${SRC_BUILD_CONTEXT}
-            dockerfile: Neal.Twitter.Infrastructure.Faster.API/${DOCKER_FILE_NAME}
+            dockerfile: API/Neal.Twitter.API.Faster/${DOCKER_FILE_NAME}
+        user: ${DEFAULT_LINUX_USER}
+        healthcheck:
+            test: nc http://localhost ${HTTP_PORT} || exit ${FAILED_HEALTH_EXIT_CODE}
+            retries: 10
+            interval: 60s
+            start_period: 10s
+        restart: unless-stopped
         networks:
             - ${INFRASTRUCTURE_NETWORK_NAME}
         ports:
@@ -35,21 +98,28 @@ services:
         volumes:
             - ${ROOT_LOGS_PATH}/${FASTER_API_NAME}:/app/tmp:rw
 
-    neal-twitter-kafka-tweet-api:
-        profiles: [ kafka-only, all ]
+    neal-twitter-api-kafka-tweet:
+        profiles: [ all ]
         image: ${KAFKA_TWEET_API_NAME}:latest
         container_name: ${KAFKA_TWEET_API_NAME}
         hostname: ${KAFKA_TWEET_API_NAME}
         build:
             context: ${SRC_BUILD_CONTEXT}
-            dockerfile: Neal.Twitter.Infrastructure.Kafka.Tweet.API/${DOCKER_FILE_NAME}
+            dockerfile: API/Neal.Twitter.API.Kafka.Tweet/${DOCKER_FILE_NAME}
+        user: ${DEFAULT_LINUX_USER}
+        healthcheck:
+            test: nc http://localhost ${HTTP_PORT} || exit ${FAILED_HEALTH_EXIT_CODE}
+            retries: 10
+            interval: 60s
+            start_period: 10s
+        restart: unless-stopped
         networks:
             - ${INFRASTRUCTURE_NETWORK_NAME}
         ports:
             - ${KAFKA_TWEET_EXTERNAL_PORT}:${HTTP_PORT}
             - ${KAFKA_TWEET_EXTERNAL_PORT_SSL}:${HTTPS_PORT}
         volumes:
-            - ${ROOT_LOGS_PATH}/${KAFKA_TWEET_API_NAME}:/app/tmp:rw          
+            - ${ROOT_LOGS_PATH}/${KAFKA_TWEET_API_NAME}:/app/tmp:rw        
 
     ## KafDrop Kafka monitory tool
     kafdrop:
@@ -119,27 +189,29 @@ services:
         networks:
             - ${INFRASTRUCTURE_NETWORK_NAME}
         ports:
-            - ${KAFKA_EXTERNAL_PORT_BASE}1:${KAFKA_EXTERNAL_PORT_BASE}1
-            - ${KAFKA_DOCKER_PORT_BASE}1:${KAFKA_DOCKER_PORT_BASE}1
-            - ${KAFKA_TOKEN_PORT_BASE}1:${KAFKA_TOKEN_PORT_BASE}1
+            - ${KAFKA_EXTERNAL_PORT_BASE}1:${KAFKA_INTERNAL_PORT_BASE}1
+            - ${KAFKA_DOCKER_EXTERNAL_PORT_BASE}1:${KAFKA_DOCKER_INTERNAL_PORT_BASE}1
+            - ${KAFKA_TOKEN_EXTERNAL_PORT_BASE}1:${KAFKA_TOKEN_INTERNAL_PORT_BASE}1
+            - ${KAFKA_PLAINTEXT_EXTERNAL_PORT_BASE}1:${KAFKA_PLAINTEXT_INTERNAL_PORT_BASE}1
+            - ${KAFKA_JMX_EXTERNAL_PORT_BASE}1:${KAFKA_JMX_INTERNAL_PORT_BASE}1
         env_file: ${KAFKA_SERVER_ENV_FILE}
         environment:
             KAFKA_BROKER_ID: 1
             KAFKA_ADVERTISED_HOST_NAME: ${KAFKA_NAME_BASE}1
-            KAFKA_ADVERTISED_LISTENERS:
-                EXTERNAL://${DOCKER_HOST_IP:-127.0.0.1}:${KAFKA_EXTERNAL_PORT_BASE}1,
-                INTERNAL://${KAFKA_NAME_BASE}1:${KAFKA_INTERNAL_PORT_BASE}1,
-                DOCKER://host.docker.internal:${KAFKA_DOCKER_PORT_BASE}1,
-                TOKEN://${KAFKA_NAME_BASE}1:${KAFKA_TOKEN_PORT_BASE}1,
-                PLAINTEXT://${KAFKA_NAME_BASE}1:${KAFKA_PLAINTEXT_PORT_BASE}1
             KAFKA_LISTENER_SECURITY_PROTOCOL_MAP:
                 EXTERNAL:${KAFKA_DEFAULT_PROTOCOL},
                 INTERNAL:${KAFKA_DEFAULT_PROTOCOL},
                 DOCKER:${KAFKA_DEFAULT_PROTOCOL},
                 TOKEN:${KAFKA_DEFAULT_PROTOCOL},
                 PLAINTEXT:${KAFKA_DEFAULT_PROTOCOL}
+            KAFKA_ADVERTISED_LISTENERS:
+                EXTERNAL://${DOCKER_HOST_IP:-127.0.0.1}:${KAFKA_EXTERNAL_PORT_BASE}1,
+                INTERNAL://${KAFKA_NAME_BASE}1:${KAFKA_INTERNAL_PORT_BASE}1,
+                DOCKER://host.docker.internal:${KAFKA_DOCKER_INTERNAL_PORT_BASE}1,
+                TOKEN://${KAFKA_NAME_BASE}1:${KAFKA_TOKEN_INTERNAL_PORT_BASE}1,
+                PLAINTEXT://${KAFKA_NAME_BASE}1:${KAFKA_PLAINTEXT_INTERNAL_PORT_BASE}1
             KAFKA_ZOOKEEPER_CONNECT: ${ZOOKEEPER_NAME}:${ZOOKEEPER_CLIENT_PORT}
-            KAFKA_JMX_PORT: ${KAFKA_JMX_PORT_BASE}1
+            KAFKA_JMX_PORT: ${KAFKA_JMX_INTERNAL_PORT_BASE}1
             KAFKA_CREATE_TOPICS: ${TOPIC_NAME}:${TOPIC_PARTITIONS}:${TOPIC_REPLICAS}:${TOPIC_CLEANUP_POLICY}
         volumes:
             - ${ROOT_LOGS_PATH}/${KAFKA_NAME_BASE}1/docker-sock:/var/run/docker-sock:rw
@@ -166,27 +238,29 @@ services:
         networks:
             - ${INFRASTRUCTURE_NETWORK_NAME}
         ports:
-            - ${KAFKA_EXTERNAL_PORT_BASE}2:${KAFKA_EXTERNAL_PORT_BASE}2
-            - ${KAFKA_DOCKER_PORT_BASE}2:${KAFKA_DOCKER_PORT_BASE}2
-            - ${KAFKA_TOKEN_PORT_BASE}2:${KAFKA_TOKEN_PORT_BASE}2
+            - ${KAFKA_EXTERNAL_PORT_BASE}2:${KAFKA_INTERNAL_PORT_BASE}2
+            - ${KAFKA_DOCKER_EXTERNAL_PORT_BASE}2:${KAFKA_DOCKER_INTERNAL_PORT_BASE}2
+            - ${KAFKA_TOKEN_EXTERNAL_PORT_BASE}2:${KAFKA_TOKEN_EXTERNAL_PORT_BASE}2
+            - ${KAFKA_PLAINTEXT_EXTERNAL_PORT_BASE}2:${KAFKA_PLAINTEXT_INTERNAL_PORT_BASE}2
+            - ${KAFKA_JMX_EXTERNAL_PORT_BASE}2:${KAFKA_JMX_INTERNAL_PORT_BASE}2
         env_file: ${KAFKA_SERVER_ENV_FILE}
         environment:
             KAFKA_BROKER_ID: 2
             KAFKA_ADVERTISED_HOST_NAME: ${KAFKA_NAME_BASE}2
-            KAFKA_ADVERTISED_LISTENERS:
-                EXTERNAL://${DOCKER_HOST_IP:-127.0.0.1}:${KAFKA_EXTERNAL_PORT_BASE}2,
-                INTERNAL://${KAFKA_NAME_BASE}2:${KAFKA_INTERNAL_PORT_BASE}2,
-                DOCKER://host.docker.internal:${KAFKA_DOCKER_PORT_BASE}2,
-                TOKEN://${KAFKA_NAME_BASE}2:${KAFKA_TOKEN_PORT_BASE}2,
-                PLAINTEXT://${KAFKA_NAME_BASE}2:${KAFKA_PLAINTEXT_PORT_BASE}2
             KAFKA_LISTENER_SECURITY_PROTOCOL_MAP:
                 EXTERNAL:${KAFKA_DEFAULT_PROTOCOL},
                 INTERNAL:${KAFKA_DEFAULT_PROTOCOL},
                 DOCKER:${KAFKA_DEFAULT_PROTOCOL},
                 TOKEN:${KAFKA_DEFAULT_PROTOCOL},
                 PLAINTEXT:${KAFKA_DEFAULT_PROTOCOL}
+            KAFKA_ADVERTISED_LISTENERS:
+                EXTERNAL://${DOCKER_HOST_IP:-127.0.0.1}:${KAFKA_EXTERNAL_PORT_BASE}2,
+                INTERNAL://${KAFKA_NAME_BASE}2:${KAFKA_INTERNAL_PORT_BASE}2,
+                DOCKER://host.docker.internal:${KAFKA_DOCKER_INTERNAL_PORT_BASE}2,
+                TOKEN://${KAFKA_NAME_BASE}2:${KAFKA_TOKEN_INTERNAL_PORT_BASE}2,
+                PLAINTEXT://${KAFKA_NAME_BASE}2:${KAFKA_PLAINTEXT_INTERNAL_PORT_BASE}2
             KAFKA_ZOOKEEPER_CONNECT: ${ZOOKEEPER_NAME}:${ZOOKEEPER_CLIENT_PORT}
-            KAFKA_JMX_PORT: ${KAFKA_JMX_PORT_BASE}2
+            KAFKA_JMX_PORT: ${KAFKA_JMX_INTERNAL_PORT_BASE}2
             KAFKA_CREATE_TOPICS: ${TOPIC_NAME}:${TOPIC_PARTITIONS}:${TOPIC_REPLICAS}:${TOPIC_CLEANUP_POLICY}
         volumes:
             - ${ROOT_LOGS_PATH}/${KAFKA_NAME_BASE}2/docker-sock:/var/run/docker-sock:rw
@@ -213,27 +287,29 @@ services:
         networks:
             - ${INFRASTRUCTURE_NETWORK_NAME}
         ports:
-            - ${KAFKA_EXTERNAL_PORT_BASE}3:${KAFKA_EXTERNAL_PORT_BASE}3
-            - ${KAFKA_DOCKER_PORT_BASE}3:${KAFKA_DOCKER_PORT_BASE}3
-            - ${KAFKA_TOKEN_PORT_BASE}3:${KAFKA_TOKEN_PORT_BASE}3
+            - ${KAFKA_EXTERNAL_PORT_BASE}3:${KAFKA_INTERNAL_PORT_BASE}3
+            - ${KAFKA_DOCKER_EXTERNAL_PORT_BASE}3:${KAFKA_DOCKER_INTERNAL_PORT_BASE}3
+            - ${KAFKA_TOKEN_EXTERNAL_PORT_BASE}3:${KAFKA_TOKEN_EXTERNAL_PORT_BASE}3
+            - ${KAFKA_PLAINTEXT_EXTERNAL_PORT_BASE}3:${KAFKA_PLAINTEXT_INTERNAL_PORT_BASE}3
+            - ${KAFKA_JMX_EXTERNAL_PORT_BASE}3:${KAFKA_JMX_INTERNAL_PORT_BASE}3
         env_file: ${KAFKA_SERVER_ENV_FILE}
         environment:
             KAFKA_BROKER_ID: 3
             KAFKA_ADVERTISED_HOST_NAME: ${KAFKA_NAME_BASE}3
-            KAFKA_ADVERTISED_LISTENERS:
-                EXTERNAL://${DOCKER_HOST_IP:-127.0.0.1}:${KAFKA_EXTERNAL_PORT_BASE}3,
-                INTERNAL://${KAFKA_NAME_BASE}3:${KAFKA_INTERNAL_PORT_BASE}3,
-                DOCKER://host.docker.internal:${KAFKA_DOCKER_PORT_BASE}3,
-                TOKEN://${KAFKA_NAME_BASE}3:${KAFKA_TOKEN_PORT_BASE}3,
-                PLAINTEXT://${KAFKA_NAME_BASE}3:${KAFKA_PLAINTEXT_PORT_BASE}3
             KAFKA_LISTENER_SECURITY_PROTOCOL_MAP:
                 EXTERNAL:${KAFKA_DEFAULT_PROTOCOL},
                 INTERNAL:${KAFKA_DEFAULT_PROTOCOL},
                 DOCKER:${KAFKA_DEFAULT_PROTOCOL},
                 TOKEN:${KAFKA_DEFAULT_PROTOCOL},
                 PLAINTEXT:${KAFKA_DEFAULT_PROTOCOL}
+            KAFKA_ADVERTISED_LISTENERS:
+                EXTERNAL://${DOCKER_HOST_IP:-127.0.0.1}:${KAFKA_EXTERNAL_PORT_BASE}3,
+                INTERNAL://${KAFKA_NAME_BASE}3:${KAFKA_INTERNAL_PORT_BASE}3,
+                DOCKER://host.docker.internal:${KAFKA_DOCKER_INTERNAL_PORT_BASE}3,
+                TOKEN://${KAFKA_NAME_BASE}3:${KAFKA_TOKEN_INTERNAL_PORT_BASE}3,
+                PLAINTEXT://${KAFKA_NAME_BASE}3:${KAFKA_PLAINTEXT_INTERNAL_PORT_BASE}3
             KAFKA_ZOOKEEPER_CONNECT: ${ZOOKEEPER_NAME}:${ZOOKEEPER_CLIENT_PORT}
-            KAFKA_JMX_PORT: ${KAFKA_JMX_PORT_BASE}3
+            KAFKA_JMX_PORT: ${KAFKA_JMX_INTERNAL_PORT_BASE}3
             KAFKA_CREATE_TOPICS: ${TOPIC_NAME}:${TOPIC_PARTITIONS}:${TOPIC_REPLICAS}:${TOPIC_CLEANUP_POLICY}
         volumes:
             - ${ROOT_LOGS_PATH}/${KAFKA_NAME_BASE}3/docker-sock:/var/run/docker-sock:rw

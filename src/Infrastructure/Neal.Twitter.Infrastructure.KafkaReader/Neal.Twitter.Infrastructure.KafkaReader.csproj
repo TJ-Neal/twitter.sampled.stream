@@ -1,0 +1,68 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <PropertyGroup>
+      <TargetFramework>net7.0</TargetFramework>
+      <Nullable>enable</Nullable>
+      <ImplicitUsings>enable</ImplicitUsings>
+      <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+      <Configurations>Debug;Release;Docker</Configurations>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="11.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0" />
+      <PackageReference Include="Microsoft.VisualStudio.SlowCheetah" Version="4.0.8">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      </PackageReference>
+  </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\Clients\Neal.Twitter.Client.Kafka\Neal.Twitter.Client.Kafka.csproj" />
+      <ProjectReference Include="..\Neal.Twitter.Infrastructure.Faster.Repository\Neal.Twitter.Infrastructure.Faster.Repository.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Remove="appsettings.Debug.json" />
+        <Content Remove="appsettings.Docker.json" />
+        <Content Remove="appsettings.Release.json" />
+        <Content Remove="Properties\launchSettings.json" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <_WebToolingArtifacts Remove="Properties\launchSettings.json" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Update="appsettings.json">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+            <TransformOnBuild>true</TransformOnBuild>
+        </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="appsettings.Debug.json">
+            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+            <DependentUpon>appsettings.json</DependentUpon>
+            <IsTransformFile>true</IsTransformFile>
+        </None>
+        <None Include="appsettings.Docker.json">
+            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+            <DependentUpon>appsettings.json</DependentUpon>
+            <IsTransformFile>true</IsTransformFile>
+        </None>
+        <None Include="appsettings.Release.json">
+            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+            <DependentUpon>appsettings.json</DependentUpon>
+            <IsTransformFile>true</IsTransformFile>
+        </None>
+        <None Include="Properties\launchSettings.json">
+          <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+          <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+          <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+        </None>
+    </ItemGroup>
+
+</Project>
