@@ -1,4 +1,4 @@
-﻿namespace Neal.Twitter.Faster.Client.Constants;
+﻿namespace Neal.Twitter.Client.Faster.Constants;
 
 /// <summary>
 /// Represents messages for logging handler events.

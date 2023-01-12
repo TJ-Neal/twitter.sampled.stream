@@ -1,11 +1,11 @@
 ﻿using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using Neal.Twitter.Client.Faster.Events.Handlers;
+using Neal.Twitter.Client.Faster.Interfaces;
+using Neal.Twitter.Client.Faster.Wrappers;
 using Neal.Twitter.Core.Entities.Configuration;
-using Neal.Twitter.Faster.Client.Events.Handlers;
-using Neal.Twitter.Faster.Client.Interfaces;
-using Neal.Twitter.Faster.Client.Wrappers;
 
-namespace Neal.Twitter.Faster.Client.Extensions;
+namespace Neal.Twitter.Client.Faster.Extensions;
 
 /// <summary>
 /// Add the required types for dependency injection when the FasterKV client and repository are enabled according to the provided <see cref="FasterConfiguration"/>.

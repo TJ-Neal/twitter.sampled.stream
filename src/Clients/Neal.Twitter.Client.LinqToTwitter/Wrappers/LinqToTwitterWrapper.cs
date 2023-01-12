@@ -5,12 +5,12 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using Neal.Twitter.Application.Constants.Messages;
 using Neal.Twitter.Application.Events.Notifications;
+using Neal.Twitter.Client.LinqToTwitter.Constants;
+using Neal.Twitter.Client.LinqToTwitter.Interfaces;
 using Neal.Twitter.Core.Entities.Twitter;
-using Neal.Twitter.LinqToTwitter.Client.Constants;
-using Neal.Twitter.LinqToTwitter.Client.Interfaces;
 using StreamContent = LinqToTwitter.StreamContent;
 
-namespace Neal.Twitter.LinqToTwitter.Client.Wrappers;
+namespace Neal.Twitter.Client.LinqToTwitter.Wrappers;
 
 /// <summary>
 /// <see cref="ILinqToTwitterWrapper"/>

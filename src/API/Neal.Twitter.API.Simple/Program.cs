@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Neal.Twitter.API.Simple.Endpoints;
 using Neal.Twitter.Application.Constants;
 using Neal.Twitter.Application.Constants.Messages;
 using Neal.Twitter.Application.Interfaces.TweetRepository;
-using Neal.Twitter.Infrastructure.Simple.API.Endpoints;
 using Neal.Twitter.Infrastructure.Simple.Repository.Services.Repository;
 using Serilog;
 using static System.Net.Mime.MediaTypeNames;
@@ -49,7 +49,7 @@ try
         .AddSwaggerGen()
         .AddProblemDetails()
         .AddMemoryCache()
-        .AddSingleton<ITweetRepository, SimpleTwwetRepository>() // Single instance of Tweet Repository without persistence
+        .AddSingleton<ITweetRepository, SimpleTweetRepository>() // Single instance of Tweet Repository without persistence
         .AddHealthChecks();
 
     var app = builder.Build();

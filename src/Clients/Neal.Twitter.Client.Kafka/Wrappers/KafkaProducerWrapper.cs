@@ -1,12 +1,13 @@
 ﻿using Confluent.Kafka;
 using Confluent.Kafka.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Neal.Twitter.Application.Constants.Messages;
+using Neal.Twitter.Client.Kafka.Constants;
+using Neal.Twitter.Client.Kafka.Interfaces;
 using Neal.Twitter.Core.Entities.Configuration;
 using Neal.Twitter.Core.Entities.Kafka;
-using Neal.Twitter.Kafka.Client.Constants;
-using Neal.Twitter.Kafka.Client.Interfaces;
 
-namespace Neal.Twitter.Kafka.Client.Wrappers;
+namespace Neal.Twitter.Client.Kafka.Wrappers;
 
 /// <summary>
 /// Represents a wrapper for interacting with the Kafka producer client and Kafka production of message logs from a Kafka message broker.
@@ -35,7 +36,7 @@ public class KafkaProducerWrapper : IKafkaProducerWrapper, IDisposable
         if (wrapperConfiguration is null
             || string.IsNullOrEmpty(wrapperConfiguration?.ClientConfig?.BootstrapServers))
         {
-            throw new KeyNotFoundException($"Key {nameof(wrapperConfiguration.ClientConfig.BootstrapServers)} was not found and is required.");
+            throw new KeyNotFoundException(string.Format(ExceptionMessages.RequiredKeyNotFound, nameof(wrapperConfiguration.ClientConfig.BootstrapServers)));
         }
 
         try
@@ -44,7 +45,7 @@ public class KafkaProducerWrapper : IKafkaProducerWrapper, IDisposable
         }
         catch (Exception ex)
         {
-            this.logger.LogCritical("Error creating Kafka Producer\n{ex}", ex);
+            this.logger.LogCritical(ExceptionMessages.InstantiationError, nameof(this.producer), ex);
         }
     }
 
@@ -104,12 +105,12 @@ public class KafkaProducerWrapper : IKafkaProducerWrapper, IDisposable
     public void Flush()
     {
         this.producer?.Flush();
-        this.logger.LogInformation("Kafka producer is being flushed.");
+        this.logger.LogInformation(CommonLogMessages.Flushed, nameof(this.producer));
     }
 
     public void Dispose()
     {
-        this.logger.LogInformation("KafkaProducerWrapper is being disposed.");
+        this.logger.LogInformation(CommonLogMessages.Disposing, nameof(this.producer));
         this.producer?.Dispose();
 
         GC.SuppressFinalize(this);

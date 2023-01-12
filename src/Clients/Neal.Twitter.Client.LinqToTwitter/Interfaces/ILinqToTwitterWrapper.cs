@@ -1,6 +1,6 @@
 ﻿using StreamContent = LinqToTwitter.StreamContent;
 
-namespace Neal.Twitter.LinqToTwitter.Client.Interfaces;
+namespace Neal.Twitter.Client.LinqToTwitter.Interfaces;
 
 /// Represents a wrapper for interacting with <see cref="LinqToTwitter"/>.
 /// </summary>

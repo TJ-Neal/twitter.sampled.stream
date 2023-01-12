@@ -4,7 +4,7 @@ using Neal.Twitter.Application.Interfaces.TweetRepository;
 using Neal.Twitter.Core.Entities.Configuration;
 using Neal.Twitter.Core.Entities.Twitter;
 
-namespace Neal.Twitter.Infrastructure.Kafka.Tweet.API.Endpoints;
+namespace Neal.Twitter.API.Kafka.Tweet.Endpoints;
 
 /// <summary>
 /// Represents endpoints for this API to interact with the underlying repository.

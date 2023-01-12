@@ -1,12 +1,12 @@
 using Confluent.Kafka;
 using LinqToTwitter.OAuth;
 using Neal.Twitter.Application.Constants.Messages;
+using Neal.Twitter.Client.Faster.Extensions;
+using Neal.Twitter.Client.Kafka.Extensions;
+using Neal.Twitter.Client.Simple.Extensions;
 using Neal.Twitter.Core.Entities.Configuration;
-using Neal.Twitter.Faster.Client.Extensions;
 using Neal.Twitter.Infrastructure.StreamReader.Extensions;
 using Neal.Twitter.Infrastructure.StreamReader.Services.TwitterApi.V2;
-using Neal.Twitter.Kafka.Client.Extensions;
-using Neal.Twitter.Simple.Client.Extensions;
 
 // Define thread to periodically send log messages for heartbeats
 var heartbeatThread = new Thread(new ThreadStart(() =>

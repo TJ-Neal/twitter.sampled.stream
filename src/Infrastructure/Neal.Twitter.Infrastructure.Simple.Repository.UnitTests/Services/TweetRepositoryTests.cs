@@ -14,17 +14,17 @@ public class TweetRepositoryTests
 
     private readonly ILoggerFactory logFactory = LoggerFactory.Create(logger => logger.AddConsole());
 
-    private readonly SimpleTwwetRepository tweetRepository;
+    private readonly SimpleTweetRepository tweetRepository;
 
     #endregion Fields
 
     public TweetRepositoryTests() => this.tweetRepository = new ServiceCollection()
             .AddSingleton<IConfiguration>(new ConfigurationBuilder().Build())
             .AddSingleton<IMemoryCache>(new MemoryCache(new MemoryCacheOptions()))
-            .AddSingleton(this.logFactory.CreateLogger<SimpleTwwetRepository>())
-            .AddSingleton(typeof(SimpleTwwetRepository))
+            .AddSingleton(this.logFactory.CreateLogger<SimpleTweetRepository>())
+            .AddSingleton(typeof(SimpleTweetRepository))
             .BuildServiceProvider()
-            .GetService<SimpleTwwetRepository>()
+            .GetService<SimpleTweetRepository>()
                 ?? throw new InvalidOperationException("Unable to create Tweet Repository.");
 
     [Fact]

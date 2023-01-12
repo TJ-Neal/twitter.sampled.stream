@@ -45,49 +45,49 @@ export interface HashtagListProps {
 
 /**
  * Represents the visual presentation of a list of hashtags and the count of their occurances.
- * @param props 
- * @returns 
+ * @param props
+ * @returns
  */
 function HashtagList(props: HashtagListProps) {
     const {
         hashtags,
         keyPrefix,
-        subtitle, 
+        subtitle,
         title,
         tweetCount,
     } = props;
 
     return (
         hashtags
-            ? 
-                <ContainerDiv>
-                    {/* Title */}
-                    <Typography variant="h5" component="div" noWrap>
-                        {title}
-                    </Typography>
+            ?
+            <ContainerDiv>
+                {/* Title */}
+                <Typography variant="h5" component="div" noWrap>
+                    {title}
+                </Typography>
 
-                    {/* Count of Tweets */}
-                    <Typography variant='h6' component='span' noWrap>
-                        {HashtagListMessages.COUNT_LABEL}
-                    </Typography>                    
-                    <StyledCount>
-                        {tweetCount}
-                    </StyledCount>
+                {/* Count of Tweets */}
+                <Typography variant='h6' component='span' noWrap>
+                    {HashtagListMessages.COUNT_LABEL}
+                </Typography>
+                <StyledCount>
+                    {tweetCount}
+                </StyledCount>
 
-                    {/* Subtitle */}
-                    <Typography variant='subtitle1' component='div'>
-                        {subtitle}
-                    </Typography>
+                {/* Subtitle */}
+                <Typography variant='subtitle1' component='div'>
+                    {subtitle}
+                </Typography>
 
-                    {/* List of hashtags */}
-                    <StyledList>
-                        {
-                            hashtags.map((tag: Hashtag) => 
-                                <HashtagDisplay hashtag={tag} keyPrefix={keyPrefix} />
-                            )
-                        }
-                    </StyledList>
-                </ContainerDiv>
+                {/* List of hashtags */}
+                <StyledList>
+                    {
+                        hashtags.map((tag: Hashtag) =>
+                            <HashtagDisplay hashtag={tag} keyPrefix={keyPrefix} />
+                        )
+                    }
+                </StyledList>
+            </ContainerDiv>
             : <></>
     );
 }

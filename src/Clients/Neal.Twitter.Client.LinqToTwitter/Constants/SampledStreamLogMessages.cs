@@ -1,4 +1,4 @@
-﻿namespace Neal.Twitter.LinqToTwitter.Client.Constants;
+﻿namespace Neal.Twitter.Client.LinqToTwitter.Constants;
 
 /// <summary>
 /// Represents messages for logging Sampled Stream events and statuses.

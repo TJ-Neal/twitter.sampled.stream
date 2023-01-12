@@ -1,6 +1,6 @@
 ﻿using LinqToTwitter.OAuth;
-using Neal.Twitter.LinqToTwitter.Client.Interfaces;
-using Neal.Twitter.LinqToTwitter.Client.Wrappers;
+using Neal.Twitter.Client.LinqToTwitter.Interfaces;
+using Neal.Twitter.Client.LinqToTwitter.Wrappers;
 
 namespace Neal.Twitter.Infrastructure.StreamReader.Extensions;
 

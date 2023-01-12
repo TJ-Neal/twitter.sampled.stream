@@ -1,5 +1,5 @@
 ﻿using Neal.Twitter.Application.Constants.Messages;
-using Neal.Twitter.LinqToTwitter.Client.Interfaces;
+using Neal.Twitter.Client.LinqToTwitter.Interfaces;
 
 namespace Neal.Twitter.Infrastructure.StreamReader.Services.TwitterApi.V2;
 

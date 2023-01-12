@@ -1,4 +1,4 @@
-﻿namespace Neal.Twitter.Kafka.Client.Constants;
+﻿namespace Neal.Twitter.Client.Kafka.Constants;
 
 /// <summary>
 /// Represents messages for logging handler events.
@@ -14,4 +14,10 @@ public struct HandlerLogMessages
     public const string ConsumerException = "Kafka consumer subscription returned an error. {message}";
 
     public const string ConsumerPostError = "Consumer post returned an error. Status: {status}, Content: {content}";
+
+    public const string NullNotification = "Notification that is null received; unable to process.";
+
+    public const string NullTweet = "Notification with null tweet received; unable to process.";
+
+    public const string NullTweetId = "Tweet with no ID received; unable to process.";
 }

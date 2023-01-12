@@ -2,12 +2,12 @@
 using Confluent.Kafka.DependencyInjection;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using Neal.Twitter.Client.Kafka.Events.Handlers;
+using Neal.Twitter.Client.Kafka.Interfaces;
+using Neal.Twitter.Client.Kafka.Wrappers;
 using Neal.Twitter.Core.Entities.Configuration;
-using Neal.Twitter.Kafka.Client.Events.Handlers;
-using Neal.Twitter.Kafka.Client.Interfaces;
-using Neal.Twitter.Kafka.Client.Wrappers;
 
-namespace Neal.Twitter.Kafka.Client.Extensions;
+namespace Neal.Twitter.Client.Kafka.Extensions;
 
 /// <summary>
 /// Add the required types for dependency injection when the Kafka client and repository are enabled according to the provided <see cref="KafkaProducerWrapperConfiguration"/>.

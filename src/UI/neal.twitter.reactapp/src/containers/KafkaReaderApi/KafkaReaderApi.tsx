@@ -33,7 +33,7 @@ function KafkaReaderApi() {
             }, 30000);
 
             setTimer(intervalTimer);
-        }        
+        }
 
         // Clear timer on unmount
         return () => {
@@ -57,13 +57,13 @@ function KafkaReaderApi() {
             });
     }
 
-    return (        
-        <HashtagList 
+    return (
+        <HashtagList
             keyPrefix="kafka"
             tweetCount={tweetCount ?? 0}
             hashtags={hashtags}
             title="Kafka/Docker API"
-            subtitle="Top 10 Hashtags" />  
+            subtitle="Top 10 Hashtags" />
     );
 }
 

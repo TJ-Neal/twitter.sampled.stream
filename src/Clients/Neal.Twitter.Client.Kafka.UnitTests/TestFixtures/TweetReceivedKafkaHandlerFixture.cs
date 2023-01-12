@@ -3,11 +3,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Neal.Twitter.Application.Events.Notifications;
 using Neal.Twitter.Application.Interfaces;
+using Neal.Twitter.Client.Kafka.Events.Handlers;
+using Neal.Twitter.Client.Kafka.Wrappers;
 using Neal.Twitter.Core.Entities.Twitter;
-using Neal.Twitter.Kafka.Client.Events.Handlers;
-using Neal.Twitter.Kafka.Client.Wrappers;
 
-namespace Neal.Twitter.Kafka.Client.UnitTests.TestFixtures;
+namespace Neal.Twitter.Client.Kafka.UnitTests.TestFixtures;
 
 public class TweetReceivedKafkaHandlerFixture
 {

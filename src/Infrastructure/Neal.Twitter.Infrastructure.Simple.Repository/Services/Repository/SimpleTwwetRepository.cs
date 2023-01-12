@@ -10,13 +10,13 @@ using System.Collections.Concurrent;
 
 namespace Neal.Twitter.Infrastructure.Simple.Repository.Services.Repository;
 
-public sealed class SimpleTwwetRepository : ITweetRepository
+public sealed class SimpleTweetRepository : ITweetRepository
 {
     #region Fields
 
     private readonly IMemoryCache memoryCache;
 
-    private readonly ILogger<SimpleTwwetRepository> logger;
+    private readonly ILogger<SimpleTweetRepository> logger;
 
     private readonly Thread heartbeatThread;
 
@@ -60,7 +60,7 @@ public sealed class SimpleTwwetRepository : ITweetRepository
         }
     }
 
-    public SimpleTwwetRepository(IMemoryCache memoryCache, ILogger<SimpleTwwetRepository> logger)
+    public SimpleTweetRepository(IMemoryCache memoryCache, ILogger<SimpleTweetRepository> logger)
     {
         this.memoryCache = memoryCache;
         this.logger = logger;
@@ -103,7 +103,7 @@ public sealed class SimpleTwwetRepository : ITweetRepository
 
     public void Dispose()
     {
-        this.logger.LogInformation(CommonLogMessages.Disposing, nameof(SimpleTwwetRepository));
+        this.logger.LogInformation(CommonLogMessages.Disposing, nameof(SimpleTweetRepository));
 
         this.cancellationTokenSource.Cancel();
         this.Tweets.Clear();
@@ -142,7 +142,7 @@ public sealed class SimpleTwwetRepository : ITweetRepository
 
             this.logger.LogInformation(
                 ApplicationStatusMessages.TweetCount,
-                nameof(SimpleTwwetRepository),
+                nameof(SimpleTweetRepository),
                 this.Tweets.Count,
                 this.HashTagCounts.Count);
         }

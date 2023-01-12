@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Neal.Twitter.API.Faster.Endpoints;
 using Neal.Twitter.Application.Constants;
 using Neal.Twitter.Application.Constants.Messages;
 using Neal.Twitter.Application.Interfaces.TweetRepository;
-using Neal.Twitter.Infrastructure.Faster.API.Endpoints;
 using Neal.Twitter.Infrastructure.Faster.Repository.Services.Repository;
 using Serilog;
 using static System.Net.Mime.MediaTypeNames;

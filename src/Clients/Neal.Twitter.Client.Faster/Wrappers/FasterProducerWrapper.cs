@@ -1,13 +1,13 @@
 ﻿using Microsoft.Extensions.Logging;
 using Neal.Twitter.Application.Constants.Messages;
 using Neal.Twitter.Application.Utilities;
+using Neal.Twitter.Client.Faster.Constants;
+using Neal.Twitter.Client.Faster.Interfaces;
 using Neal.Twitter.Core.Entities.Configuration;
 using Neal.Twitter.Core.Entities.Twitter;
-using Neal.Twitter.Faster.Client.Constants;
-using Neal.Twitter.Faster.Client.Interfaces;
 using System.Net.Http.Json;
 
-namespace Neal.Twitter.Faster.Client.Wrappers;
+namespace Neal.Twitter.Client.Faster.Wrappers;
 
 /// <summary>
 /// <inheritdoc cref="IFasterProducerWrapper" />

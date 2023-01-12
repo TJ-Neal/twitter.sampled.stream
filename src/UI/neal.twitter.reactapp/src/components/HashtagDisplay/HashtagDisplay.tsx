@@ -33,14 +33,14 @@ export interface HashtagDisplayProps {
 
 /**
  * Represents the visual presentation of a single hashtag with count of occurances.
- * @param props 
- * @returns 
+ * @param props
+ * @returns
  */
 function HashtagDisplay(props: HashtagDisplayProps) {
     const {hashtag, keyPrefix} = props;
 
-    return ( 
-        /* List item */       
+    return (
+        /* List item */
         <StyledContainer key={`${keyPrefix}-${hashtag.key}`}>
             {/* Hashtag text */}
             <ListItemKeyDiv>

@@ -1,8 +1,8 @@
 ﻿using MediatR;
 using Neal.Twitter.Application.Events.Notifications;
-using Neal.Twitter.Simple.Client.Interfaces;
+using Neal.Twitter.Client.Simple.Interfaces;
 
-namespace Neal.Twitter.Simple.Client.Events.Handlers;
+namespace Neal.Twitter.Client.Simple.Events.Handlers;
 
 /// <summary>
 /// Client handler for the Simple repository for when a Tweet event is raised.
