@@ -1,0 +1,37 @@
+{
+    "profiles": {
+        "https": {
+            "commandName": "Project",
+            "launchBrowser": true,
+            "launchUrl": "swagger",
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "dotnetRunMessages": true,
+            "applicationUrl": "https://localhost:4201",
+            "sslPort": 4201,
+            "useSSL": true
+        },
+        "http": {
+            "commandName": "Project",
+            "launchBrowser": true,
+            "launchUrl": "swagger",
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "dotnetRunMessages": true,
+            "applicationUrl": "http://localhost:4200",
+            "httpPort": 4200
+        },
+        "Docker": {
+            "commandName": "Docker",
+            "launchBrowser": true,
+            "launchUrl": "https://{ServiceHost}:4201/swagger",
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Docker"
+            },
+            "publishAllPorts": true,
+            "useSSL": true
+        }
+    }
+}

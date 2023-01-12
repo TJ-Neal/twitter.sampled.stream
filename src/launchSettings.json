@@ -1,14 +1,40 @@
 {
-  "profiles": {
-    "Docker Compose": {
-      "commandName": "DockerCompose",
-      "commandVersion": "1.0",
-      "composeLaunchAction": "LaunchBrowser",
-      "composeLaunchServiceName": "neal.twitter.api",
-      "composeLaunchUrl": "{Scheme}://localhost:{ServicePort}/weatherforecast",
-      "serviceActions": {
-        "neal.twitter.api": "StartDebugging"
-      }
+    "profiles": {
+        "all": {
+            "commandName": "DockerCompose",
+            "commandVersion": "1.0",
+            "composeProfile": {
+                "includes": [
+                    "all"
+                ]
+            }
+        },
+        "faster-only": {
+            "commandName": "DockerCompose",
+            "commandVersion": "1.0",
+            "composeProfile": {
+                "includes": [
+                    "faster-only"
+                ]
+            }
+        },
+        "kafka-only": {
+            "commandName": "DockerCompose",
+            "commandVersion": "1.0",
+            "composeProfile": {
+                "includes": [
+                    "kafka-only"
+                ]
+            }
+        },
+        "simple-only": {
+            "commandName": "DockerCompose",
+            "commandVersion": "1.0",
+            "composeProfile": {
+                "includes": [
+                    "simple-only"
+                ]
+            }
+        }
     }
-  }
 }
