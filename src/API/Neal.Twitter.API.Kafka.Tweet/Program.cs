@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Neal.Twitter.API.Kafka.Tweet.Endpoints;
 using Neal.Twitter.Application.Constants;
 using Neal.Twitter.Application.Constants.Messages;
 using Neal.Twitter.Application.Interfaces.TweetRepository;
 using Neal.Twitter.Infrastructure.Faster.Repository.Services.Repository;
-using Neal.Twitter.Infrastructure.Kafka.Tweet.API.Endpoints;
 using Serilog;
 using static System.Net.Mime.MediaTypeNames;
 

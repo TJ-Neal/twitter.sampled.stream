@@ -12,7 +12,7 @@ import { requestData } from '../../data'
 
 /**
  * Represents the data returned from the FasterKV API
- * @returns 
+ * @returns
  */
 function FasterFVApi() {
     // Configure state
@@ -33,7 +33,7 @@ function FasterFVApi() {
             }, 30000);
 
             setTimer(intervalTimer);
-        }        
+        }
 
         // Clear timer on unmount
         return () => {
@@ -57,7 +57,7 @@ function FasterFVApi() {
             });
     }
 
-    return (            
+    return (
         <>
             {/* Hashtag List */}
             <HashtagList
@@ -65,7 +65,7 @@ function FasterFVApi() {
                 tweetCount={tweetCount ?? 0}
                 hashtags={hashtags}
                 title="FasterKV API"
-                subtitle="Top 10 Hashtags" />       
+                subtitle="Top 10 Hashtags" />
         </>
     );
 }

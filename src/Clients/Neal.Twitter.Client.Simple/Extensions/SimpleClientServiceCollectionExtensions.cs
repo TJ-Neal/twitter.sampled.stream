@@ -1,11 +1,11 @@
 ﻿using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using Neal.Twitter.Client.Simple.Events.Handlers;
+using Neal.Twitter.Client.Simple.Interfaces;
+using Neal.Twitter.Client.Simple.Wrappers;
 using Neal.Twitter.Core.Entities.Configuration;
-using Neal.Twitter.Simple.Client.Events.Handlers;
-using Neal.Twitter.Simple.Client.Interfaces;
-using Neal.Twitter.Simple.Client.Wrappers;
 
-namespace Neal.Twitter.Simple.Client.Extensions;
+namespace Neal.Twitter.Client.Simple.Extensions;
 
 /// <summary>
 /// Add the required types for dependency injection when the Simple client and repository are enabled according to the provided <see cref="SimpleConfiguration"/>.

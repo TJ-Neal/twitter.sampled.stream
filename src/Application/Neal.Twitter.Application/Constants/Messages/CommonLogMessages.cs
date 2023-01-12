@@ -14,4 +14,6 @@ public struct CommonLogMessages
     public const string Disposing = "Disposing {object}.";
 
     public const string StartingLoop = "Starting background loop...";
+
+    public const string Flushed = "{name} is being flushed.";
 }

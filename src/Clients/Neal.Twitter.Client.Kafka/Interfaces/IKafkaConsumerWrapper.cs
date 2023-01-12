@@ -1,4 +1,4 @@
-﻿namespace Neal.Twitter.Kafka.Client.Interfaces;
+﻿namespace Neal.Twitter.Client.Kafka.Interfaces;
 
 /// <summary>
 /// Represents a wrapper for consuming log messages from the Kafka consumer.

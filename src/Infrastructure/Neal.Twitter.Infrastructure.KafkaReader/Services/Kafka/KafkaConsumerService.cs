@@ -1,5 +1,5 @@
 ﻿using Neal.Twitter.Application.Constants.Messages;
-using Neal.Twitter.Kafka.Client.Interfaces;
+using Neal.Twitter.Client.Kafka.Interfaces;
 
 namespace Neal.Twitter.Infrastructure.KafkaReader.Services.Kafka;
 

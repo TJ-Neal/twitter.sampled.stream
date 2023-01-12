@@ -1,6 +1,6 @@
 ﻿using LinqToTwitter.OAuth;
 
-namespace Neal.Twitter.LinqToTwitter.Client.Interfaces;
+namespace Neal.Twitter.Client.LinqToTwitter.Interfaces;
 
 /// <summary>
 /// Represents a wrapper for interacting with the <see cref="ApplicationOnlyAuthorizer"/> from <see cref="LinqToTwitter"/>.

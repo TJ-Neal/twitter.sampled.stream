@@ -2,12 +2,13 @@
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Neal.Twitter.Application.Events.Notifications;
+using Neal.Twitter.Client.Kafka.Constants;
+using Neal.Twitter.Client.Kafka.Interfaces;
 using Neal.Twitter.Core.Entities.Configuration;
 using Neal.Twitter.Core.Entities.Kafka;
 using Neal.Twitter.Core.Entities.Twitter;
-using Neal.Twitter.Kafka.Client.Interfaces;
 
-namespace Neal.Twitter.Kafka.Client.Events.Handlers;
+namespace Neal.Twitter.Client.Kafka.Events.Handlers;
 
 /// <summary>
 /// Implementation of an event handler for received tweets to capture them and publish them to Kafka
@@ -44,21 +45,21 @@ public class KafkaTweetReceivedHandler : INotificationHandler<TweetReceivedNotif
     {
         if (notification is null)
         {
-            this.logger.LogDebug("Notification that is null received; unable to process.");
+            this.logger.LogDebug(HandlerLogMessages.NullNotification);
 
             return;
         }
 
         if (notification.Tweet is null)
         {
-            this.logger.LogDebug("Notification with null tweet received; unable to process.");
+            this.logger.LogDebug(HandlerLogMessages.NullTweet);
 
             return;
         }
 
-        if (notification.Tweet.Id is null)
+        if (notification.Tweet.Id is null || string.IsNullOrWhiteSpace(notification.Tweet.Id))
         {
-            this.logger.LogDebug("Tweet with no ID received; unable to process.");
+            this.logger.LogDebug(HandlerLogMessages.NullTweetId);
 
             return;
         }

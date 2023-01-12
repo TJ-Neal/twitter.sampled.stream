@@ -12,7 +12,7 @@ import { requestData } from '../../data'
 
 /**
  * Represents the information provided by the Simple Tweet API.
- * @returns 
+ * @returns
  */
 function SimpleApi() {
     // Configure state
@@ -33,7 +33,7 @@ function SimpleApi() {
             }, 30000);
 
             setTimer(intervalTimer);
-        }        
+        }
 
         // Clear timer on unmount
         return () => {

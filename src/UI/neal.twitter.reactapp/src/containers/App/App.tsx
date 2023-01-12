@@ -8,11 +8,11 @@ import {
 } from '@mui/material';
 
 // Import components
-import { 
+import {
     SimpleApi,
     FasterKVApi,
     KafkaReaderApi
- } from '../';
+} from '../';
 
 // Import files
 import { AppMessageStrings as Messages } from './App.constants';
@@ -50,7 +50,7 @@ function App() {
 
             {/* Content */}
             <StyledBox>
-                <SimpleApi />                
+                <SimpleApi />
                 <FasterKVApi />
                 <KafkaReaderApi />
             </StyledBox>

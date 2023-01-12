@@ -4,10 +4,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Neal.Twitter.Application.Events.Notifications;
+using Neal.Twitter.Client.LinqToTwitter.Interfaces;
+using Neal.Twitter.Client.LinqToTwitter.Wrappers;
 using Neal.Twitter.Core.Entities.Twitter;
 using Neal.Twitter.Infrastructure.StreamReader.Services.TwitterApi.V2;
-using Neal.Twitter.LinqToTwitter.Client.Interfaces;
-using Neal.Twitter.LinqToTwitter.Client.Wrappers;
 using StreamContent = LinqToTwitter.StreamContent;
 
 namespace Neal.Twitter.Infrastructure.StreamReader.UnitTests.TestFixtures;

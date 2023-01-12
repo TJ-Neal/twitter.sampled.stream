@@ -1,9 +1,9 @@
 ﻿using Confluent.Kafka;
 using Neal.Twitter.Application.Constants.Messages;
+using Neal.Twitter.Client.Kafka.Interfaces;
+using Neal.Twitter.Client.Kafka.Wrappers;
 using Neal.Twitter.Core.Entities.Configuration;
 using Neal.Twitter.Infrastructure.KafkaReader.Services.Kafka;
-using Neal.Twitter.Kafka.Client.Interfaces;
-using Neal.Twitter.Kafka.Client.Wrappers;
 
 // Define thread to periodically send warning messages for heartbeats
 var heartbeatThread = new Thread(new ThreadStart(() =>

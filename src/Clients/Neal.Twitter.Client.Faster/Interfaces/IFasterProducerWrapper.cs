@@ -1,7 +1,7 @@
 ﻿using Neal.Twitter.Application.Interfaces;
 using Neal.Twitter.Core.Entities.Twitter;
 
-namespace Neal.Twitter.Faster.Client.Interfaces;
+namespace Neal.Twitter.Client.Faster.Interfaces;
 
 /// <summary>
 /// Represents a wrapper for events produced for the FasterKV client and repository.

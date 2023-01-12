@@ -1,4 +1,4 @@
-﻿namespace Neal.Twitter.Simple.Client.Constants;
+﻿namespace Neal.Twitter.Client.Simple.Constants;
 
 /// <summary>
 /// Represents messages for logging producer messages.

@@ -2,14 +2,14 @@
 using Microsoft.Extensions.Logging;
 using Neal.Twitter.Application.Constants.Messages;
 using Neal.Twitter.Application.Utilities;
+using Neal.Twitter.Client.Kafka.Constants;
+using Neal.Twitter.Client.Kafka.Interfaces;
 using Neal.Twitter.Core.Entities.Configuration;
 using Neal.Twitter.Core.Entities.Twitter;
-using Neal.Twitter.Kafka.Client.Constants;
-using Neal.Twitter.Kafka.Client.Interfaces;
 using System.Net.Http.Json;
 using System.Text.Json;
 
-namespace Neal.Twitter.Kafka.Client.Wrappers;
+namespace Neal.Twitter.Client.Kafka.Wrappers;
 
 /// <summary>
 /// Represents a wrapper for interacting with the Kafka consumer client and Kafka consuming message logs from a Kafka message broker.
@@ -43,7 +43,7 @@ public class KafkaConsumerWrapper : IKafkaConsumerWrapper<string, string>
             new ConsumerBuilder<string, string>(this.configuration.ClientConfig)
             .Build();
         this.consumer.Subscribe(this.configuration.Topic);
-        this.logger.LogInformation("Subscribed to [topic] {topic}", wrapperConfiguration.Topic);
+        this.logger.LogInformation(WrapperLogMessages.Subscribed, wrapperConfiguration.Topic);
     }
 
     public async Task ConsumeAsync(CancellationToken cancellationToken)
@@ -109,6 +109,9 @@ public class KafkaConsumerWrapper : IKafkaConsumerWrapper<string, string>
 
     public void Dispose()
     {
+        this.logger.LogInformation(CommonLogMessages.Disposing, nameof(KafkaConsumerWrapper));
+        this.logger.LogInformation(CommonLogMessages.Disposing, nameof(this.consumer));
+
         try
         {
             if (this.consumer is not null)
@@ -124,7 +127,6 @@ public class KafkaConsumerWrapper : IKafkaConsumerWrapper<string, string>
                 .LogError(ExceptionMessages.DisposeException, nameof(this.consumer), ex.Message);
         }
 
-        this.logger.LogInformation("{name} has been disposed.", nameof(KafkaConsumerWrapper));
         GC.SuppressFinalize(this);
     }
 

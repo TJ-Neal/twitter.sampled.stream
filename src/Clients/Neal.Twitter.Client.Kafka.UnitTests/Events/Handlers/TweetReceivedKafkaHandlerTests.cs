@@ -1,8 +1,8 @@
 ﻿using Neal.Twitter.Application.Events.Notifications;
+using Neal.Twitter.Client.Kafka.UnitTests.TestFixtures;
 using Neal.Twitter.Core.Entities.Twitter;
-using Neal.Twitter.Kafka.Client.UnitTests.TestFixtures;
 
-namespace Neal.Twitter.Kafka.Client.UnitTests.Events.Handlers;
+namespace Neal.Twitter.Client.Kafka.UnitTests.Events.Handlers;
 
 public class TweetReceivedKafkaHandlerTests : IClassFixture<TweetReceivedKafkaHandlerFixture>
 {

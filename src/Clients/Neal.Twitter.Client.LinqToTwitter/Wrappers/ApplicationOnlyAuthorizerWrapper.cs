@@ -1,8 +1,8 @@
 ﻿using LinqToTwitter.OAuth;
-using Neal.Twitter.LinqToTwitter.Client.Interfaces;
+using Neal.Twitter.Client.LinqToTwitter.Interfaces;
 using System.Net;
 
-namespace Neal.Twitter.LinqToTwitter.Client.Wrappers;
+namespace Neal.Twitter.Client.LinqToTwitter.Wrappers;
 
 /// <summary>
 /// <inheritdoc cref="IApplicationOnlyAuthorizerWrapper"/>

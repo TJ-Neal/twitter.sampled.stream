@@ -1,8 +1,8 @@
 ﻿using MediatR;
 using Neal.Twitter.Application.Events.Notifications;
-using Neal.Twitter.Faster.Client.Interfaces;
+using Neal.Twitter.Client.Faster.Interfaces;
 
-namespace Neal.Twitter.Faster.Client.Events.Handlers;
+namespace Neal.Twitter.Client.Faster.Events.Handlers;
 
 /// <summary>
 /// Client handler for the FasterKV repository for when a Tweet event is raised.
